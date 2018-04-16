@@ -929,7 +929,7 @@ YY_RULE_SETUP
                 LIST;
                 printf("%d: %s", linenum++, buf);
                 buf[0] = '\0';
-                strcat(stringTemp,"\\n");
+                strcat(stringTemp,"\n");
                 }
 	YY_BREAK
 case 7:
@@ -937,13 +937,12 @@ YY_RULE_SETUP
 #line 80 "rust_lex.l"
 {
                 LIST;
-                strcat(stringTemp,"\"");
-                
+                strcat(stringTemp,"\"");             
                 }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 86 "rust_lex.l"
+#line 85 "rust_lex.l"
 {
                 LIST;
                 strcat(stringTemp,yytext);               
@@ -951,312 +950,312 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 91 "rust_lex.l"
+#line 90 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 92 "rust_lex.l"
+#line 91 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 93 "rust_lex.l"
+#line 92 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 94 "rust_lex.l"
+#line 93 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 95 "rust_lex.l"
+#line 94 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 96 "rust_lex.l"
+#line 95 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 97 "rust_lex.l"
+#line 96 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 98 "rust_lex.l"
+#line 97 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 99 "rust_lex.l"
+#line 98 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 100 "rust_lex.l"
+#line 99 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 101 "rust_lex.l"
+#line 100 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 102 "rust_lex.l"
+#line 101 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 103 "rust_lex.l"
+#line 102 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 104 "rust_lex.l"
+#line 103 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 105 "rust_lex.l"
+#line 104 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 106 "rust_lex.l"
+#line 105 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 107 "rust_lex.l"
+#line 106 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 108 "rust_lex.l"
+#line 107 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 109 "rust_lex.l"
+#line 108 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 110 "rust_lex.l"
+#line 109 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 111 "rust_lex.l"
+#line 110 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 112 "rust_lex.l"
+#line 111 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 113 "rust_lex.l"
+#line 112 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 114 "rust_lex.l"
+#line 113 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 115 "rust_lex.l"
+#line 114 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 116 "rust_lex.l"
+#line 115 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 117 "rust_lex.l"
+#line 116 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 118 "rust_lex.l"
+#line 117 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 119 "rust_lex.l"
+#line 118 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 120 "rust_lex.l"
+#line 119 "rust_lex.l"
 {token(yytext);}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 122 "rust_lex.l"
+#line 121 "rust_lex.l"
 {keyword("BOOL");}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 123 "rust_lex.l"
+#line 122 "rust_lex.l"
 {keyword("BREAK");}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 124 "rust_lex.l"
+#line 123 "rust_lex.l"
 {keyword("CHAR");}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 125 "rust_lex.l"
+#line 124 "rust_lex.l"
 {keyword("CONTINUE");}
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 126 "rust_lex.l"
+#line 125 "rust_lex.l"
 {keyword("DO");}
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 127 "rust_lex.l"
+#line 126 "rust_lex.l"
 {keyword("ELSE");}
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 128 "rust_lex.l"
+#line 127 "rust_lex.l"
 {keyword("ENUM");}
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 129 "rust_lex.l"
+#line 128 "rust_lex.l"
 {keyword("EXTERN");}
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 130 "rust_lex.l"
+#line 129 "rust_lex.l"
 {keyword("FALSE");}
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 131 "rust_lex.l"
+#line 130 "rust_lex.l"
 {keyword("FLOAT");}
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 132 "rust_lex.l"
+#line 131 "rust_lex.l"
 {keyword("FOR");}
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 133 "rust_lex.l"
+#line 132 "rust_lex.l"
 {keyword("FN");}
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 134 "rust_lex.l"
+#line 133 "rust_lex.l"
 {keyword("IF");}
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 135 "rust_lex.l"
+#line 134 "rust_lex.l"
 {keyword("IN");}
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 136 "rust_lex.l"
+#line 135 "rust_lex.l"
 {keyword("INT");}
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 137 "rust_lex.l"
+#line 136 "rust_lex.l"
 {keyword("LET");}
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 138 "rust_lex.l"
+#line 137 "rust_lex.l"
 {keyword("LOOP");}
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 139 "rust_lex.l"
+#line 138 "rust_lex.l"
 {keyword("MATCH");}
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 140 "rust_lex.l"
+#line 139 "rust_lex.l"
 {keyword("MUT");}
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 141 "rust_lex.l"
+#line 140 "rust_lex.l"
 {keyword("PRINT");}
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 142 "rust_lex.l"
+#line 141 "rust_lex.l"
 {keyword("PRINTLN");}
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 143 "rust_lex.l"
+#line 142 "rust_lex.l"
 {keyword("PUB");}
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 144 "rust_lex.l"
+#line 143 "rust_lex.l"
 {keyword("RETURN");}
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 145 "rust_lex.l"
+#line 144 "rust_lex.l"
 {keyword("SELF");}
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 146 "rust_lex.l"
+#line 145 "rust_lex.l"
 {keyword("STATIC");}
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 147 "rust_lex.l"
+#line 146 "rust_lex.l"
 {keyword("STR");}
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 148 "rust_lex.l"
+#line 147 "rust_lex.l"
 {keyword("STRUCT");}
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 149 "rust_lex.l"
+#line 148 "rust_lex.l"
 {keyword("TRUE");}
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 150 "rust_lex.l"
+#line 149 "rust_lex.l"
 {keyword("USE");}
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 151 "rust_lex.l"
+#line 150 "rust_lex.l"
 {keyword("WHERE");}
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 152 "rust_lex.l"
+#line 151 "rust_lex.l"
 {keyword("WHILE");}
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 154 "rust_lex.l"
+#line 153 "rust_lex.l"
 {
                 tokenString("id",yytext);
                 insert(yytext);
@@ -1264,7 +1263,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 159 "rust_lex.l"
+#line 158 "rust_lex.l"
 {
         LIST;
         mutiCommentTimes++;
@@ -1273,7 +1272,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 165 "rust_lex.l"
+#line 164 "rust_lex.l"
 {
                         LIST;
                         mutiCommentTimes--;
@@ -1283,7 +1282,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 172 "rust_lex.l"
+#line 171 "rust_lex.l"
 {
                         LIST;
                         mutiCommentTimes++;
@@ -1292,7 +1291,7 @@ YY_RULE_SETUP
 case 74:
 /* rule 74 can match eol */
 YY_RULE_SETUP
-#line 177 "rust_lex.l"
+#line 176 "rust_lex.l"
 {
                         LIST;
                         printf("%d: %s", linenum++, buf);
@@ -1301,12 +1300,12 @@ YY_RULE_SETUP
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 183 "rust_lex.l"
+#line 182 "rust_lex.l"
 {LIST;}
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
-#line 185 "rust_lex.l"
+#line 184 "rust_lex.l"
 {
         LIST;
         BEGIN(IN_LINECOMMENT);
@@ -1315,7 +1314,7 @@ YY_RULE_SETUP
 case 77:
 /* rule 77 can match eol */
 YY_RULE_SETUP
-#line 190 "rust_lex.l"
+#line 189 "rust_lex.l"
 {
                         LIST;
                         printf("%d: %s", linenum++, buf);
@@ -1325,18 +1324,18 @@ YY_RULE_SETUP
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
-#line 197 "rust_lex.l"
+#line 196 "rust_lex.l"
 {LIST;}
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
-#line 199 "rust_lex.l"
+#line 198 "rust_lex.l"
 {LIST;}
 	YY_BREAK
 case 80:
 /* rule 80 can match eol */
 YY_RULE_SETUP
-#line 201 "rust_lex.l"
+#line 200 "rust_lex.l"
 {
         LIST;
         printf("%d: %s", linenum++, buf);
@@ -1345,7 +1344,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 81:
 YY_RULE_SETUP
-#line 207 "rust_lex.l"
+#line 206 "rust_lex.l"
 {
         LIST;
         printf("%d:%s\n", linenum, buf);
@@ -1355,10 +1354,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 82:
 YY_RULE_SETUP
-#line 214 "rust_lex.l"
+#line 213 "rust_lex.l"
 ECHO;
 	YY_BREAK
-#line 1362 "lex.yy.c"
+#line 1361 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(IN_STRING):
 case YY_STATE_EOF(IN_COMMENT):
@@ -2362,7 +2361,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 214 "rust_lex.l"
+#line 213 "rust_lex.l"
 
 
 
@@ -2431,3 +2430,4 @@ int dump()
 
         return symbolCount;
 }
+

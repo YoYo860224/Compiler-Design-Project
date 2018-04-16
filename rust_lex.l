@@ -79,7 +79,7 @@ ID              {alphabet}({alphabet}|{dig})*
 
 <IN_STRING>\"\" {
                 LIST;
-                strcat(stringTemp,"\"\"");             
+                strcat(stringTemp,"\"");             
                 }
 
 <IN_STRING>.    {
