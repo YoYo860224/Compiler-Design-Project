@@ -32,12 +32,10 @@ alphabets       [a-zA-z]+
 dig             [0-9]
 digs            [0-9]+
 
-integer         -?{digs}
-plain_real      -?{digs}"."{digs}
-expreal         -?{digs}"."{digs}[Ee][+-]?{digs}
-real            {plain_real}|{expreal}|({integer}[Ee][+-]?{digs})
-
-boolean         (true|false)
+integer         {digs}
+plain_real      [+-]?{digs}"."{digs}
+expreal         [+-]?{digs}"."{digs}[Ee][+-]?{digs}
+real            {plain_real}|{expreal}|[+-]?{digs}[Ee][+-]?{digs}
 
 ID              {alphabet}({alphabet}|{dig})*
 
@@ -49,10 +47,6 @@ ID              {alphabet}({alphabet}|{dig})*
 
 {integer}       {
                 tokenInteger("integer", atoi(yytext));
-                }
-
-{boolean}       {
-                tokenString("boolean", yytext);
                 }
 
 {real}          {
