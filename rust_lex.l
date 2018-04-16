@@ -74,13 +74,12 @@ ID              {alphabet}({alphabet}|{dig})*
                 LIST;
                 printf("%d: %s", linenum++, buf);
                 buf[0] = '\0';
-                strcat(stringTemp,"\\n");
+                strcat(stringTemp,"\n");
                 }
 
 <IN_STRING>\"\" {
                 LIST;
-                strcat(stringTemp,"\"");
-                
+                strcat(stringTemp,"\"\"");             
                 }
 
 <IN_STRING>.    {
