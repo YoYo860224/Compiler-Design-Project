@@ -12,4 +12,4 @@ run :
 	./$(GCC_OUT_FILENAME) < $(RUNFILE_PATH)
 
 clean :
-	rm -f *.out *.c *.h
+	rm -f *.c *.h
