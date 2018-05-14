@@ -191,7 +191,7 @@ ID              {alphabet}({alphabet}|{dig})*
 
 [ \t]*  {LIST;}
 
-\n      {
+\n|\r\n {
         LIST;
         printf("%d: %s", linenum++, buf);
         buf[0] = '\0';
