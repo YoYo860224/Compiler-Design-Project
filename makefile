@@ -1,11 +1,15 @@
 LEX_FILE_NAME = rust_lex.l
-GCC_OUT_FILENAME = rust_lex.out
+YACC_FILE_NAME = rust_yacc.y
+GCC_OUT_FILENAME = rust.out
 RUNFILE_PATH = test.rs
 
 main : $(LEX_FILE_NAME)
+	bison -y -d $(YACC_FILE_NAME)
 	flex $(LEX_FILE_NAME)
-	gcc lex.yy.c -ll -o $(GCC_OUT_FILENAME)
+	gcc lex.yy.c y.tab.c -ll -ly -o $(GCC_OUT_FILENAME)
 
 run :
-	#cat $(RUNFILE_PATH) | ./$(GCC_OUT_FILENAME)
 	./$(GCC_OUT_FILENAME) < $(RUNFILE_PATH)
+
+clean :
+	rm -f *.out *.c *.h
