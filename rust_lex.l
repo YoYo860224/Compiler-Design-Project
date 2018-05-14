@@ -158,7 +158,7 @@ ID              {alphabet}({alphabet}|{dig})*
 <IN_COMMENT>"*/"        {
                         LIST;
                         mutiCommentTimes--;
-                        if(mutiCommentTimes == 0)
+                        if (mutiCommentTimes == 0)
                                 BEGIN(INITIAL);
                         }
 
@@ -200,7 +200,7 @@ ID              {alphabet}({alphabet}|{dig})*
 .       {
         LIST;
         printf("%d:%s\n", linenum, buf);
-        printf("bad character:'%s'\n",yytext);
+        printf("bad character:'%s'\n", yytext);
         exit(-1);
         }
 
@@ -238,9 +238,9 @@ int create()
 
 int lookup(char* s)
 {
-        for(int i =0; i < symbolCount; i++)
+        for (int i = 0; i < symbolCount; i++)
         {
-                if (strcmp(symbolTable[i], s)==0)
+                if (strcmp(symbolTable[i], s) == 0)
                         return i;
         }
         return -1;
@@ -248,9 +248,9 @@ int lookup(char* s)
 
 int insert(char* s)
 {
-        if(lookup(s) == -1)
+        if (lookup(s) == -1)
         {
-                symbolTable[symbolCount] = malloc(yyleng*sizeof(char));
+                symbolTable[symbolCount] = malloc(yyleng * sizeof(char));
                 strcpy(symbolTable[symbolCount], s);
                 symbolCount++;                
         }
@@ -261,7 +261,7 @@ int dump()
 {
         printf("\nSymbol Table:\n");
         
-        for(int i =0; i < symbolCount; i++)
+        for (int i = 0; i < symbolCount; i++)
         {               
                 printf("%s\n", symbolTable[i]);
                 free(symbolTable[symbolCount]);
