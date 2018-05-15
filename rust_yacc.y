@@ -1,13 +1,15 @@
 %{
+#include <iostream>
+#include <vector>
 #include <stdlib.h>
 #include <stdio.h>
+
 #define Trace(t)        printf(t)
 
-int yyerror(char *s);
-int yylex();
-int create();
-int dump();
-
+extern "C" {
+    int yyerror(const char *s);
+    extern int yylex();
+}
 %}
 
 /* tokens */
@@ -31,17 +33,22 @@ statement:      ID                      { Trace("Reducing to statement\n"); }
             ;
 %%
 
-int yyerror(char *s)
+
+
+int yyerror(const char *s)
 {
     fprintf(stderr, "%s\n", s);
     return 0;
 }
+
 int main(void)
 {
-    create();
+    // For test cpp function
+    std::vector<int> a;
+    a.push_back(1);
+    std::cout << a[0] << "\n"; 
+    std::cout << "Can use cpp function\n\n";
 
     yyparse();
     return 0;
-
-    dump();
 }

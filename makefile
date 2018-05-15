@@ -1,15 +1,28 @@
-LEX_FILE_NAME = rust_lex.l
-YACC_FILE_NAME = rust_yacc.y
-GCC_OUT_FILENAME = rust.out
-RUNFILE_PATH = test.rs
+CC = g++
+LEX = flex
+YACC = bison
+LEX_FILENAME = rust_lex.l
+YACC_FILENAME = rust_yacc.y
+OUTPUT_FILENAME = rust.exe
 
-main : $(LEX_FILE_NAME)
-	bison -y -d $(YACC_FILE_NAME)
-	flex $(LEX_FILE_NAME)
-	gcc lex.yy.c y.tab.c -ll -ly -o $(GCC_OUT_FILENAME)
+$(OUTPUT_FILENAME): clean lex.yy.o y.tab.o
+	$(CC) lex.yy.o y.tab.o -o $(OUTPUT_FILENAME)
 
-run :
-	./$(GCC_OUT_FILENAME) < $(RUNFILE_PATH)
+lex.yy.o: lex.yy.cpp y.tab.h
+	$(CC) -c lex.yy.cpp
 
-clean :
-	rm -f *.c *.h
+y.tab.o: y.tab.cpp
+	$(CC) -c y.tab.cpp
+
+y.tab.cpp y.tab.h: $(YACC_FILENAME)
+	$(YACC) -y -d $(YACC_FILENAME)
+	mv y.tab.c y.tab.cpp
+
+lex.yy.cpp: $(LEX_FILENAME)
+	$(LEX) -o lex.yy.cpp $(LEX_FILENAME)
+
+clean:
+	rm -f lex.yy.cpp y.tab.cpp y.tab.h  *.o *.exe 
+
+run: 
+	./$(OUTPUT_FILENAME) < test.rs

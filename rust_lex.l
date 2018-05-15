@@ -11,20 +11,17 @@
 #define MAX_LINE_LENG 1024
 #define MAX_SYMBOL 1024
 
+extern "C"{
+    int yywrap();
+    int yylex();
+}
+
 int linenum = 1;
 char buf[MAX_LINE_LENG];
 
 int mutiCommentTimes = 0;
 
 char stringTemp[MAX_LINE_LENG];
-
-int symbolCount = 0;
-char **symbolTable;
-
-int create();
-int lookup(char* s);
-int insert(char* s);
-int dump();
 
 %}
 
@@ -48,7 +45,7 @@ ID              {alphabet}({alphabet}|{dig})*
 %%
 
 {integer}       {
-                    tokenType(INTEGER, atoi(yytext));
+                    tokenType(INTEGER, atoi(yytext));                  
                 }
 
 {real}          {
@@ -147,8 +144,7 @@ ID              {alphabet}({alphabet}|{dig})*
 "while"         {keyword(WHILE);}
 
 {ID}            {
-                    tokenType(ID, yytext);
-                    insert(yytext);   
+                    tokenType(ID, yytext);  
                 }
 
 "/*"    {
@@ -208,21 +204,6 @@ ID              {alphabet}({alphabet}|{dig})*
 
 %%
 
-/*
-int main()
-{
-    create();
-    
-    // main() need containing yylex() to do lexical analyze.
-    yylex();
-
-    dump();
-
-    fflush(yyout);
-    exit(0);
-}
-*/
-
 // called by lexical analyzer if end of the input file.
 int yywrap()
 {
@@ -233,45 +214,4 @@ int yywrap()
         exit(-1);
     }
     return 1;
-}
-
-int create()
-{
-    symbolTable = malloc(MAX_SYMBOL*sizeof(char*));
-}
-
-int lookup(char* s)
-{
-    for (int i = 0; i < symbolCount; i++)
-    {
-        if (strcmp(symbolTable[i], s) == 0)
-            return i;
-    }
-    return -1;
-}
-
-int insert(char* s)
-{
-    if (lookup(s) == -1)
-    {
-        symbolTable[symbolCount] = malloc(yyleng * sizeof(char));
-        strcpy(symbolTable[symbolCount], s);
-        symbolCount++;                
-    }
-    return symbolCount - 1;
-}
-
-int dump()
-{
-    printf("\nSymbol Table:\n");
-    
-    for (int i = 0; i < symbolCount; i++)
-    {               
-        printf("%s\n", symbolTable[i]);
-        free(symbolTable[symbolCount]);
-    }
-
-    free(symbolTable);
-
-    return symbolCount;
 }
