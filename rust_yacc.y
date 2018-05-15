@@ -3,6 +3,7 @@
 #include <vector>
 #include <stdlib.h>
 #include <stdio.h>
+#include "symbol.h"
 
 #define Trace(t)        printf(t)
 
@@ -49,6 +50,11 @@ int main(void)
     std::cout << a[0] << "\n"; 
     std::cout << "Can use cpp function\n\n";
 
+    create();
+
     yyparse();
+    
+    dump();
+
     return 0;
 }

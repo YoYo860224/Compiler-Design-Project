@@ -9,7 +9,6 @@
 #define tokenType(type, val) { LIST; return type; }
 
 #define MAX_LINE_LENG 1024
-#define MAX_SYMBOL 1024
 
 extern "C"{
     int yywrap();
