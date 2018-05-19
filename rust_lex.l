@@ -3,39 +3,56 @@
 #include <stdio.h>
 #include "y.tab.h"
 
-#define LIST    strcat(buf, yytext)
-#define keyword(k)  { LIST;  }
-#define token(t)    { LIST;  }
-#define tokenType(type, val) { LIST; return type; }
+#define LIST    				strcat(buf, yytext)
+#define token(t)    			{ 								\
+									LIST; 						\
+									printf("<%s>\n", yytext); 	\
+									return t; 					\
+								}
+
+#define tokenType(type, val) 	{ 										\
+									LIST; 								\
+									printf("<%s: %s>\n", #type, val); 	\
+									return type; 						\
+								}		
+
+#define tokenString(val) 		{ 														\
+									LIST; 												\
+									printf("<%s: %s>\n", "STRING", stringTemp);			\
+									stringTemp[0] = '\0';	 							\
+									BEGIN(INITIAL); return STRING;						\
+									return STRING;										\
+								}
 
 #define MAX_LINE_LENG 1024
 
 extern "C"{
-    int yywrap();
-    int yylex();
+	int yywrap();
+	int yylex();
 }
 
+// For print lines.
 int linenum = 1;
 char buf[MAX_LINE_LENG];
 
+// For state of comment and string.
 int mutiCommentTimes = 0;
-
 char stringTemp[MAX_LINE_LENG];
 
 %}
 
-alphabet        [a-zA-z]
-alphabets       [a-zA-z]+
+alphabet		[a-zA-z]
+alphabets		[a-zA-z]+
 
-dig             [0-9]
-digs            [0-9]+
+dig				[0-9]
+digs			[0-9]+
 
-integer         {digs}
-plain_real      [+-]?{digs}"."{digs}
-expreal         [+-]?{digs}"."{digs}[Ee][+-]?{digs}
-real            {plain_real}|{expreal}|[+-]?{digs}[Ee][+-]?{digs}
+integer			{digs}
+plain_real		[+-]?{digs}"."{digs}
+expreal			[+-]?{digs}"."{digs}[Ee][+-]?{digs}
+real			{plain_real}|{expreal}|[+-]?{digs}[Ee][+-]?{digs}
 
-ID              {alphabet}({alphabet}|{dig})*
+ID				{alphabet}({alphabet}|{dig})*
 
 %x IN_STRING
 %x IN_COMMENT
@@ -44,173 +61,179 @@ ID              {alphabet}({alphabet}|{dig})*
 %%
 
 {integer}       {
-                    tokenType(INTEGER, atoi(yytext));                  
-                }
+					tokenType(INTEGER, yytext);
+				}
 
 {real}          {
-                    tokenType(REAL, yytext);
-                }
+					tokenType(REAL, yytext);
+				}
 
 \"              {
-                    LIST;    
-                    BEGIN(IN_STRING);
-                }
+					LIST;
+					BEGIN(IN_STRING);
+				}
 
 <IN_STRING>\"   {
-                    tokenType(STRING, stringTemp);
-                    stringTemp[0] = '\0';
-                    BEGIN(INITIAL);
-                } 
+					LIST;
+					printf("<%s: %s>\n", "STRING", stringTemp);
+					stringTemp[0] = '\0';					
+					BEGIN(INITIAL);				
+					return STRING;
+				}
 
 <IN_STRING>\n   {
-                    LIST;
-                    printf("%d: %s", linenum++, buf);
-                    buf[0] = '\0';
-                    strcat(stringTemp,"\n");
-                }
+					LIST;
+					printf("%d: %s", linenum++, buf);
+					buf[0] = '\0';
+					strcat(stringTemp, "\n");
+				}
 
 <IN_STRING>\"\" {
-                    LIST;
-                    strcat(stringTemp,"\"");             
-                }
+					LIST;
+					strcat(stringTemp, "\"");
+				}
 
 <IN_STRING>.    {
-                    LIST;
-                    strcat(stringTemp,yytext);               
-                }
+					LIST;
+					strcat(stringTemp, yytext);
+				}
 
-","     {token(yytext); return ',';}
-":"     {token(yytext);}
-";"     {token(yytext);}
-"("     {token(yytext);}
-")"     {token(yytext);}
-"["     {token(yytext);}
-"]"     {token(yytext);}
-"{"     {token(yytext);}
-"}"     {token(yytext);}
-"+"     {token(yytext);}
-"-"     {token(yytext);}
-"*"     {token(yytext);}
-"/"     {token(yytext);}
-"++"    {token(yytext); return PLUS_PLUS;}
-"--"    {token(yytext);}
-"%"     {token(yytext);}
-"<"     {token(yytext);}
-">"     {token(yytext);}
-"<="    {token(yytext);}
-">="    {token(yytext);}
-"=="    {token(yytext);}
-"!="    {token(yytext);}
-"&&"    {token(yytext);}
-"||"    {token(yytext);}
-"!"     {token(yytext);}
-"="     {token(yytext);}
-"+="    {token(yytext);}
-"-="    {token(yytext);}
-"*="    {token(yytext);}
-"/="    {token(yytext);}
+","		{ token(','); }
+":"		{ token(':'); }
+";"		{ token(';'); }
+"("		{ token('('); }
+")"		{ token(')'); }
+"["		{ token('['); }
+"]"		{ token(']'); }
+"{"		{ token('{'); }
+"}"		{ token('}'); }
 
-"bool"          {keyword(BOOL);}
-"break"         {keyword(BREAK);}
-"char"          {keyword(CHAR);}
-"continue"      {keyword(CONTINUE);}
-"do"            {keyword(DO);}
-"else"          {keyword(ELSE);}
-"enum"          {keyword(ENUM);}
-"extern"        {keyword(EXTERN);}
-"false"         {keyword(FALSE);}
-"float"         {keyword(FLOAT);}
-"for"           {keyword(FOR);}
-"fn"            {keyword(FN);}
-"if"            {keyword(IF);}
-"in"            {keyword(IN);}
-"int"           {keyword(INT);}
-"let"           {keyword(LET);}
-"loop"          {keyword(LOOP);}
-"match"         {keyword(MATCH);}
-"mut"           {keyword(MUT);}
-"print"         {keyword(PRINT);}
-"println"       {keyword(PRINTLN);}
-"pub"           {keyword(PUB);}
-"return"        {keyword(RETURN);}
-"self"          {keyword(SELF);}
-"static"        {keyword(STATIC);}
-"str"           {keyword(STR);}
-"struct"        {keyword(STRUCT);}
-"true"          {keyword(TRUE);}
-"use"           {keyword(USE);}
-"where"         {keyword(WHERE);}
-"while"         {keyword(WHILE);}
+"+"		{ token('+'); }
+"-"		{ token('-'); }
+"*"		{ token('*'); }
+"/"		{ token('/'); }
+"++"    { token(OP_INCREMENT); }
+"--"    { token(OP_DECREMENT); }
 
-{ID}            {
-                    tokenType(ID, yytext);  
-                }
+"%"		{ token('%'); }
+"<"		{ token('<'); }
+">"		{ token('>'); }
+"<="    { token(OP_LESS_EQUAL); }
+">="    { token(OP_GREAT_EQUAL); }
+"=="    { token(OP_EQUAL); }
+"!="    { token(OP_NOT_EQUAL); }
+"&&"    { token(OP_AND); }
+"||"    { token(OP_OR); }
 
-"/*"    {
-            LIST;
-            mutiCommentTimes++;
-            BEGIN(IN_COMMENT);
-        }
+"!"		{ token('!'); }
+"="		{ token('='); }
+"+="    { token(OP_ADDITION_ASSIGNMENT); }
+"-="    { token(OP_SUBTRACTION_ASSIGNMENT); }
+"*="    { token(OP_MULTIPLICATION_ASSIGNMENT); }
+"/="    { token(OP_DIVISION_ASSIGNMENT); }
 
-<IN_COMMENT>"*/"        {
-                            LIST;
-                            mutiCommentTimes--;
-                            if (mutiCommentTimes == 0)
-                                BEGIN(INITIAL);
-                        }
+"true"			{ token(KW_TRUE); }
+"false"			{ token(KW_FALSE); }
 
-<IN_COMMENT>"/*"        {
-                            LIST;
-                            mutiCommentTimes++;
-                        }                       
+"bool"			{ token(KW_BOOL); }
+"break"			{ token(KW_BREAK); }
+"char"			{ token(KW_CHAR); }
+"continue"		{ token(KW_CONTINUE); }
+"do"			{ token(KW_DO); }
+"else"			{ token(KW_ELSE); }
+"enum"			{ token(KW_ENUM); }
+"extern"		{ token(KW_EXTERN); }
+"float"			{ token(KW_FLOAT); }
+"for"			{ token(KW_FOR); }
+"fn"			{ token(KW_FN); }
+"if"			{ token(KW_IF); }
+"in"			{ token(KW_IN); }
+"int"			{ token(KW_INT); }
+"let"			{ token(KW_LET); }
+"loop"			{ token(KW_LOOP); }
+"match"			{ token(KW_MATCH); }
+"mut"			{ token(KW_MUT); }
+"print"			{ token(KW_PRINT); }
+"println"		{ token(KW_PRINTLN); }
+"pub"			{ token(KW_PUB); }
+"return"		{ token(KW_RETURN); }
+"self"			{ token(KW_SELF); }
+"static"		{ token(KW_STATIC); }
+"str"			{ token(KW_STR); }
+"struct"		{ token(KW_STRUCT); }
+"use"			{ token(KW_USE); }
+"where"			{ token(KW_WHERE); }
+"while"			{ token(KW_WHILE); }
 
-<IN_COMMENT>\n          {
-                            LIST;
-                            printf("%d: %s", linenum++, buf);
-                            buf[0] = '\0';
-                        }
+{ID}			{
+					tokenType(ID, yytext);
+				}
 
-<IN_COMMENT>.           {LIST;}
+"/*"	{
+			LIST;
+			mutiCommentTimes++;
+			BEGIN(IN_COMMENT);
+		}
 
-"//"    {
-            LIST;
-            BEGIN(IN_LINECOMMENT);
-        }
+<IN_COMMENT>"*/"		{
+							LIST;
+							mutiCommentTimes--;
+							if (mutiCommentTimes == 0)
+								BEGIN(INITIAL);
+						}
 
-<IN_LINECOMMENT>\n      {
-                            LIST;
-                            printf("%d: %s", linenum++, buf);
-                            buf[0] = '\0';
-                            BEGIN(INITIAL);
-                        }
+<IN_COMMENT>"/*"		{
+							LIST;
+							mutiCommentTimes++;
+						}
 
-<IN_LINECOMMENT>.       {LIST;}
+<IN_COMMENT>\n			{
+							LIST;
+							printf("%d: %s", linenum++, buf);
+							buf[0] = '\0';
+						}
 
-[ \t]*      {LIST;}
+<IN_COMMENT>.			{ LIST; }
 
-\n|\r\n     {
-                LIST;
-                printf("%d: %s", linenum++, buf);
-                buf[0] = '\0';
-            }
+"//"	{
+			LIST;
+			BEGIN(IN_LINECOMMENT);
+		}
 
-.           {
-                LIST;
-                printf("%d:%s\n", linenum, buf);
-                printf("bad character:'%s'\n", yytext);
-                exit(-1);
-            }
+<IN_LINECOMMENT>\n		{
+							LIST;
+							printf("%d: %s", linenum++, buf);
+							buf[0] = '\0';
+							BEGIN(INITIAL);
+						}
+
+<IN_LINECOMMENT>.		{ LIST; }
+
+[ \t]*		{ LIST; }
+
+\n|\r\n		{
+				LIST;
+				printf("%d: %s", linenum++, buf);
+				buf[0] = '\0';
+			}
+
+.			{
+				LIST;
+				printf("%d:%s\n", linenum, buf);
+				printf("bad character:'%s'\n", yytext);
+				exit(-1);
+			}
 
 %%
 
 // called by lexical analyzer if end of the input file.
 int yywrap()
 {
-    printf("%d:%s\n", linenum, buf);
-    if(stringTemp[0] != '\0')
-    {       
-        printf("unterminated double quote string");
-        exit(-1);
-    }
-    return 1;
+	printf("%d:%s\n", linenum, buf);
+	if(stringTemp[0] != '\0')
+	{
+		printf("unterminated double quote string");
+		exit(-1);
+	}
+	return 1;
 }
