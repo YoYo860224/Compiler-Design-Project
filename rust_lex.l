@@ -14,7 +14,7 @@
 									LIST; 								\
 									printf("<%s: %s>\n", #type, val); 	\
 									return type; 						\
-								}		
+								}
 
 #define tokenString(val) 		{ 														\
 									LIST; 												\
@@ -76,8 +76,8 @@ ID				{alphabet}({alphabet}|{dig})*
 <IN_STRING>\"   {
 					LIST;
 					printf("<%s: %s>\n", "STRING", stringTemp);
-					stringTemp[0] = '\0';					
-					BEGIN(INITIAL);				
+					stringTemp[0] = '\0';
+					BEGIN(INITIAL);
 					return STRING;
 				}
 

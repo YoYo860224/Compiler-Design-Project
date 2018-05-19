@@ -74,18 +74,18 @@ extern "C" {
 %nonassoc UMINUS
 
 %%
-program:		declarations functionDecs	{ Trace("Reducing to start\n"); }
-			|	functionDecs				{ Trace("Reducing to start\n"); }
+program:		declarations functionDecs	{ Trace("Reducing to program\n"); }
+			|	functionDecs				{ Trace("Reducing to program\n"); }
 			;
 
 declarations:	declaration					{ Trace("Reducing to declarations\n"); }
-			|	declaration declarations	{ Trace("Reducing to declarations\n"); }			
+			|	declaration declarations	{ Trace("Reducing to declarations\n"); }
 			;
 
 declaration:	varDec					{ Trace("Reducing to declaration\n"); }
 			|	constDec				{ Trace("Reducing to declaration\n"); }
 			|	arrDec					{ Trace("Reducing to declaration\n"); }
-			;			
+			;
 
 type:			KW_STR					{ Trace("Reducing to type\n"); }
 			|	KW_INT					{ Trace("Reducing to type\n"); }
@@ -93,28 +93,27 @@ type:			KW_STR					{ Trace("Reducing to type\n"); }
 			|	KW_FLOAT				{ Trace("Reducing to type\n"); }
 			;
 
-varDec:			KW_LET KW_MUT ID ':' type ';'					{ Trace("Reducing to variableDeclaration\n"); }
-			|	KW_LET KW_MUT ID '=' expression	';'				{ Trace("Reducing to variableDeclaration\n"); }
-			|	KW_LET KW_MUT ID ':' type '=' expression ';'	{ Trace("Reducing to variableDeclaration\n"); }
-			|	KW_LET KW_MUT ID ';'							{ Trace("Reducing to variableDeclaration\n"); }
+varDec:			KW_LET KW_MUT ID ':' type ';'					{ Trace("Reducing to varDec\n"); }
+			|	KW_LET KW_MUT ID '=' expression	';'				{ Trace("Reducing to varDec\n"); }
+			|	KW_LET KW_MUT ID ':' type '=' expression ';'	{ Trace("Reducing to varDec\n"); }
+			|	KW_LET KW_MUT ID ';'							{ Trace("Reducing to varDec\n"); }
 			;
 
-constDec:		KW_LET ID ':' type ';'					{ Trace("Reducing to constantDeclaration\n"); }
-			|	KW_LET ID '=' expression ';'			{ Trace("Reducing to constantDeclaration\n"); }
-			|	KW_LET ID ':' type '=' expression ';'	{ Trace("Reducing to constantDeclaration\n"); }
+constDec:		KW_LET ID '=' expression ';'			{ Trace("Reducing to constDec\n"); }
+			|	KW_LET ID ':' type '=' expression ';'	{ Trace("Reducing to constDec\n"); }
 			;
 
-arrDec:			KW_LET KW_MUT ID '[' type ',' integerExpr ']' ';'
+arrDec:			KW_LET KW_MUT ID '[' type ',' integerExpr ']' ';'	{ Trace("Reducing to arrDec\n"); }
 			;
 
-functionDecs:	functionDec								{ Trace("Reducing to functionDeclarations\n"); }
-			|	functionDec functionDecs				{ Trace("Reducing to functionDeclarations\n"); }
+functionDecs:	functionDec								{ Trace("Reducing to functionDecs\n"); }
+			|	functionDec functionDecs				{ Trace("Reducing to functionDecs\n"); }
 			;
 
-functionDec:	KW_FN ID '('  ')' scope								{ Trace("Reducing to functionDeclaration\n"); }
-			|	KW_FN ID '(' formalArgs ')' scope					{ Trace("Reducing to functionDeclaration\n"); }
-			|	KW_FN ID '('  ')' '-' '>' type	scope				{ Trace("Reducing to functionDeclaration\n"); }
-			|	KW_FN ID '(' formalArgs ')' '-' '>' type scope		{ Trace("Reducing to functionDeclaration\n"); }
+functionDec:	KW_FN ID '('  ')' scope								{ Trace("Reducing to functionDec\n"); }
+			|	KW_FN ID '(' formalArgs ')' scope					{ Trace("Reducing to functionDec\n"); }
+			|	KW_FN ID '('  ')' '-' '>' type	scope				{ Trace("Reducing to functionDec\n"); }
+			|	KW_FN ID '(' formalArgs ')' '-' '>' type scope		{ Trace("Reducing to functionDec\n"); }
 			;
 
 formalArgs:		ID ':' type					{ Trace("Reducing to formalArgs\n"); }
@@ -122,7 +121,7 @@ formalArgs:		ID ':' type					{ Trace("Reducing to formalArgs\n"); }
 			;
 
 scope:			'{' '}'						{ Trace("Reducing to scope\n"); }
-			|	'{' scopeContent '}'
+			|	'{' scopeContent '}'		{ Trace("Reducing to scope\n"); }
 			;
 
 scopeContent:	declarations scopeContent	{ Trace("Reducing to scopeContent\n"); }
@@ -161,7 +160,7 @@ expression:		'-' expression %prec UMINUS					{ Trace("Reducing to expression\n")
 			|	functionInvoc								{ Trace("Reducing to expression\n"); }
 			|	ID											{ Trace("Reducing to expression\n"); }
 			|	ID '[' integerExpr ']'						{ Trace("Reducing to expression\n"); }
-			;	
+			;
 
 integerExpr:	INTEGER		{ Trace("Reducing to integerExpr\n"); }
 			;
@@ -187,7 +186,7 @@ stringExpr:		STRING						{ Trace("Reducing to stringExpr\n"); }
 
 functionInvoc:	ID '(' parameters ')'		{ Trace("Reducing to functionInvoc\n"); }
 
-parameters:		expression ',' parameters	{ Trace("Reducing to integerExpr\n"); }
+parameters:		expression ',' parameters	{ Trace("Reducing to parameters\n"); }
 			|	expression					{ Trace("Reducing to parameters\n"); }
 			;
 
