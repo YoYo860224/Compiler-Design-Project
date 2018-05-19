@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "y.tab.h"
+#include "symbol.h"
 
 #define LIST    				strcat(buf, yytext)
 #define token(t)    			{ 								\
@@ -20,7 +21,7 @@
 									LIST; 												\
 									printf("<%s: %s>\n", "STRING", stringTemp);			\
 									stringTemp[0] = '\0';	 							\
-									BEGIN(INITIAL); return STRING;						\
+									BEGIN(INITIAL);										\
 									return STRING;										\
 								}
 
@@ -61,10 +62,14 @@ ID				{alphabet}({alphabet}|{dig})*
 %%
 
 {integer}       {
+					yylval.Token.tokenType = 0;
+					yylval.Token.intVal = atoi(yytext);
 					tokenType(INTEGER, yytext);
 				}
 
 {real}          {
+					yylval.Token.tokenType = 1;
+					yylval.Token.floatVal = atof(yytext);
 					tokenType(REAL, yytext);
 				}
 
@@ -74,6 +79,8 @@ ID				{alphabet}({alphabet}|{dig})*
 				}
 
 <IN_STRING>\"   {
+					yylval.Token.tokenType = 3;
+					yylval.Token.stringVal = strdup(yytext);
 					tokenString(stringTemp);
 				}
 
@@ -128,8 +135,8 @@ ID				{alphabet}({alphabet}|{dig})*
 "*="    { token(OP_MULTIPLICATION_ASSIGNMENT); }
 "/="    { token(OP_DIVISION_ASSIGNMENT); }
 
-"true"			{ token(KW_TRUE); }
-"false"			{ token(KW_FALSE); }
+"true"			{ yylval.Token.tokenType = 2; yylval.Token.boolVal = true; token(KW_TRUE); }
+"false"			{ yylval.Token.tokenType = 2; yylval.Token.boolVal = false; token(KW_FALSE); }
 
 "bool"			{ token(KW_BOOL); }
 "break"			{ token(KW_BREAK); }
@@ -162,6 +169,7 @@ ID				{alphabet}({alphabet}|{dig})*
 "while"			{ token(KW_WHILE); }
 
 {ID}			{
+					yylval.Token.stringVal = strdup(yytext);
 					tokenType(ID, yytext);
 				}
 

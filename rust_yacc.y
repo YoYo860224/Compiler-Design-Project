@@ -1,6 +1,7 @@
 %{
 #include <iostream>
 #include <vector>
+#include <string>
 #include <stdlib.h>
 #include <stdio.h>
 #include "symbol.h"
@@ -11,14 +12,23 @@ extern "C" {
 	int yyerror(const char *s);
 	extern int yylex();
 }
+
+symbolTables symTabs = symbolTables();
+
 %}
 
 /* tokens */
-%token SEMICOLON
-%token INTEGER
-%token STRING
-%token REAL
-%token ID
+%union{
+	struct{		
+		int tokenType; // 0:int 1:float 2:bool 3:string
+		union{
+			int intVal;
+			float floatVal;
+			bool boolVal;
+			char* stringVal;
+		};
+	} Token;
+}
 
 %token OP_INCREMENT
 %token OP_DECREMENT
@@ -65,161 +75,163 @@ extern "C" {
 %token KW_WHERE
 %token KW_WHILE
 
+%token <Token> INTEGER
+%token <Token> STRING
+%token <Token> REAL
+%token <Token> ID
+
+
+
 %start program
 
-%left OP_OR OP_AND '!'
+%left OP_OR 
+%left OP_AND
+%left '!'
 %left '>' '<' OP_GREAT_EQUAL OP_EQUAL OP_LESS_EQUAL OP_NOT_EQUAL
 %left '+' '-'
 %left '*' '/'
 %nonassoc UMINUS
 
 %%
-program:		declarations functionDecs	{ Trace("Reducing to program\n"); }
-			|	functionDecs				{ Trace("Reducing to program\n"); }
+program:		declarations functionDecs	{ Trace("Reducing to program Form declarations functionDecs\n"); }
+			|	functionDecs				{ Trace("Reducing to program Form functionDecs\n"); }
 			;
 
-declarations:	declaration					{ Trace("Reducing to declarations\n"); }
-			|	declaration declarations	{ Trace("Reducing to declarations\n"); }
+declarations:	declaration					{ Trace("Reducing to declarations Form declaration\n"); }
+			|	declaration declarations	{ Trace("Reducing to declarations Form declaration declarations\n"); }
 			;
 
-declaration:	varDec					{ Trace("Reducing to declaration\n"); }
-			|	constDec				{ Trace("Reducing to declaration\n"); }
-			|	arrDec					{ Trace("Reducing to declaration\n"); }
+declaration:	varDec					{ Trace("Reducing to declaration Form varDec\n"); }
+			|	constDec				{ Trace("Reducing to declaration Form constDec\n"); }
+			|	arrDec					{ Trace("Reducing to declaration Form arrDec\n"); }
 			;
 
-type:			KW_STR					{ Trace("Reducing to type\n"); }
-			|	KW_INT					{ Trace("Reducing to type\n"); }
-			|	KW_BOOL					{ Trace("Reducing to type\n"); }
-			|	KW_FLOAT				{ Trace("Reducing to type\n"); }
+type:			KW_STR					{ Trace("Reducing to type Form KW_STR\n"); }
+			|	KW_INT					{ Trace("Reducing to type Form KW_INT\n"); }
+			|	KW_BOOL					{ Trace("Reducing to type Form KW_BOOL\n"); }
+			|	KW_FLOAT				{ Trace("Reducing to type Form KW_FLOAT\n"); }
 			;
 
-varDec:			KW_LET KW_MUT ID ':' type ';'					{ Trace("Reducing to varDec\n"); }
-			|	KW_LET KW_MUT ID '=' expression	';'				{ Trace("Reducing to varDec\n"); }
-			|	KW_LET KW_MUT ID ':' type '=' expression ';'	{ Trace("Reducing to varDec\n"); }
-			|	KW_LET KW_MUT ID ';'							{ Trace("Reducing to varDec\n"); }
+varDec:			KW_LET KW_MUT ID ':' type ';'					{ Trace("Reducing to varDec Form KW_LET KW_MUT ID ':' type ';'\n"); }
+			|	KW_LET KW_MUT ID '=' expression	';'				{ Trace("Reducing to varDec Form KW_LET KW_MUT ID '=' expression ';'\n"); }
+			|	KW_LET KW_MUT ID ':' type '=' expression ';'	{ Trace("Reducing to varDec Form KW_LET KW_MUT ID ':' type '=' expression ';'\n"); }
+			|	KW_LET KW_MUT ID ';'							{ Trace("Reducing to varDec Form KW_LET KW_MUT ID ';'\n"); }
 			;
 
-constDec:		KW_LET ID '=' expression ';'			{ Trace("Reducing to constDec\n"); }
-			|	KW_LET ID ':' type '=' expression ';'	{ Trace("Reducing to constDec\n"); }
+constDec:		KW_LET ID '=' expression ';'			{ Trace("Reducing to constDec Form KW_LET ID '=' expression ';'\n"); }
+			|	KW_LET ID ':' type '=' expression ';'	{ Trace("Reducing to constDec Form KW_LET ID ':' type '=' expression ';'\n"); }
 			;
 
-arrDec:			KW_LET KW_MUT ID '[' type ',' integerExpr ']' ';'	{ Trace("Reducing to arrDec\n"); }
+arrDec:			KW_LET KW_MUT ID '[' type ',' integerExpr ']' ';'	{ Trace("Reducing to arrDec Form KW_LET KW_MUT ID '[' type ',' integerExpr ']' ';'\n"); }
 			;
 
-functionDecs:	functionDec								{ Trace("Reducing to functionDecs\n"); }
-			|	functionDec functionDecs				{ Trace("Reducing to functionDecs\n"); }
+functionDecs:	functionDec								{ Trace("Reducing to functionDecs Form functionDec\n"); }
+			|	functionDec functionDecs				{ Trace("Reducing to functionDecs Form functionDec functionDecs\n"); }
 			;
 
-functionDec:	KW_FN ID '('  ')' scope								{ Trace("Reducing to functionDec\n"); }
-			|	KW_FN ID '(' formalArgs ')' scope					{ Trace("Reducing to functionDec\n"); }
-			|	KW_FN ID '('  ')' '-' '>' type	scope				{ Trace("Reducing to functionDec\n"); }
-			|	KW_FN ID '(' formalArgs ')' '-' '>' type scope		{ Trace("Reducing to functionDec\n"); }
+functionDec:	KW_FN ID '('  ')' scope								{ Trace("Reducing to functionDec Form KW_FN ID '('  ')' scope\n"); }
+			|	KW_FN ID '(' formalArgs ')' scope					{ Trace("Reducing to functionDec Form KW_FN ID '(' formalArgs ')' scope\n"); }
+			|	KW_FN ID '('  ')' '-' '>' type	scope				{ Trace("Reducing to functionDec Form KW_FN ID '('  ')' '-' '>' type	scope\n"); }
+			|	KW_FN ID '(' formalArgs ')' '-' '>' type scope		{ Trace("Reducing to functionDec Form KW_FN ID '(' formalArgs ')' '-' '>' type scope\n"); }
 			;
 
-formalArgs:		ID ':' type					{ Trace("Reducing to formalArgs\n"); }
-			|	ID ':' type ',' formalArgs	{ Trace("Reducing to formalArgs\n"); }
+formalArgs:		ID ':' type					{ Trace("Reducing to formalArgs Form ID ':' type\n"); }
+			|	ID ':' type ',' formalArgs	{ Trace("Reducing to formalArgs Form ID ':' type ',' formalArgs\n"); }
 			;
 
-scope:			'{' '}'						{ Trace("Reducing to scope\n"); }
-			|	'{' scopeContent '}'		{ Trace("Reducing to scope\n"); }
+scope:			'{' '}'						{ Trace("Reducing to scope Form '{' '}'\n"); }
+			|	'{' scopeContent '}'		{ Trace("Reducing to scope Form '{' scopeContent '}'\n"); }
 			;
 
-scopeContent:	declarations scopeContent	{ Trace("Reducing to scopeContent\n"); }
-			|	statements scopeContent		{ Trace("Reducing to scopeContent\n"); }
-			|	declarations				{ Trace("Reducing to scopeContent\n"); }
-			|	statements					{ Trace("Reducing to scopeContent\n"); }
+scopeContent:	declarations scopeContent	{ Trace("Reducing to scopeContent Form declarations scopeContent\n"); }
+			|	statements scopeContent		{ Trace("Reducing to scopeContent Form statements scopeContent\n"); }
+			|	declarations				{ Trace("Reducing to scopeContent Form declarations\n"); }
+			|	statements					{ Trace("Reducing to scopeContent Form statements\n"); }
 			;
 
-statements:		statement statements		{ Trace("Reducing to statements\n"); }
-			|	statement					{ Trace("Reducing to statements\n"); }
+statements:		statement statements		{ Trace("Reducing to statements Form statement statements\n"); }
+			|	statement					{ Trace("Reducing to statements Form statement\n"); }
 			;
 
-statement:		ID '=' expression ';'						{ Trace("Reducing to statement\n"); }
-			|	ID '[' integerExpr']' '=' expression ';'	{ Trace("Reducing to statement\n"); }
-			|	KW_PRINT expression	';'						{ Trace("Reducing to statement\n"); }
-			|	KW_PRINTLN expression ';'					{ Trace("Reducing to statement\n"); }
-			|	KW_RETURN expression ';'					{ Trace("Reducing to statement\n"); }
-			|	KW_RETURN ';'								{ Trace("Reducing to statement\n"); }
-			|	block										{ Trace("Reducing to statement\n"); }
-			|	conditional									{ Trace("Reducing to statement\n"); }
-			|	loop										{ Trace("Reducing to statement\n"); }
-			|	functionInvoc								{ Trace("Reducing to statement\n"); }
+statement:		ID '=' expression ';'						{ Trace("Reducing to statement Form ID '=' expression ';'\n"); }
+			|	ID '[' integerExpr']' '=' expression ';'	{ Trace("Reducing to statement Form ID '[' integerExpr']' '=' expression ';'\n"); }
+			|	KW_PRINT expression	';'						{ Trace("Reducing to statement Form KW_PRINT expression	';'\n"); }
+			|	KW_PRINTLN expression ';'					{ Trace("Reducing to statement Form KW_PRINTLN expression ';'\n"); }
+			|	KW_RETURN expression ';'					{ Trace("Reducing to statement Form KW_RETURN expression ';'\n"); }
+			|	KW_RETURN ';'								{ Trace("Reducing to statement Form KW_RETURN ';'\n"); }
+			|	block										{ Trace("Reducing to statement Form block\n"); }
+			|	conditional									{ Trace("Reducing to statement Form conditional\n"); }
+			|	loop										{ Trace("Reducing to statement Form loop\n"); }
+			|	functionInvoc								{ Trace("Reducing to statement Form functionInvoc\n"); }
 			;
 
-expression:		'-' expression %prec UMINUS					{ Trace("Reducing to expression\n"); }
-			|	expression '+' expression					{ Trace("Reducing to expression\n"); }
-			|	expression '-' expression					{ Trace("Reducing to expression\n"); }
-			|	expression '*' expression					{ Trace("Reducing to expression\n"); }
-			|	expression '/' expression					{ Trace("Reducing to expression\n"); }
-			|	expression '%' expression					{ Trace("Reducing to expression\n"); }
-			|	'(' expression ')'							{ Trace("Reducing to expression\n"); }
-			|	integerExpr									{ Trace("Reducing to expression\n"); }
-			|	realExpr									{ Trace("Reducing to expression\n"); }
-			|	boolExpr									{ Trace("Reducing to expression\n"); }
-			|	stringExpr									{ Trace("Reducing to expression\n"); }
-			|	functionInvoc								{ Trace("Reducing to expression\n"); }
-			|	ID											{ Trace("Reducing to expression\n"); }
-			|	ID '[' integerExpr ']'						{ Trace("Reducing to expression\n"); }
+expression:		'-' expression %prec UMINUS					{ Trace("Reducing to expression Form '-' expression\n"); }
+			|	expression '+' expression					{ Trace("Reducing to expression Form expression '+' expression\n"); }
+			|	expression '-' expression					{ Trace("Reducing to expression Form expression '-' expression\n"); }
+			|	expression '*' expression					{ Trace("Reducing to expression Form expression '*' expression\n"); }
+			|	expression '/' expression					{ Trace("Reducing to expression Form expression '/' expression\n"); }
+			|	expression '%' expression					{ Trace("Reducing to expression Form expression '%%' expression\n"); }
+			|	'(' expression ')'							{ Trace("Reducing to expression Form '(' expression ')'\n"); }
+			|	integerExpr									{ Trace("Reducing to expression Form integerExpr\n"); }
+			|	realExpr									{ Trace("Reducing to expression Form realExpr\n"); }
+			|	boolExpr									{ Trace("Reducing to expression Form boolExpr\n"); }
+			|	stringExpr									{ Trace("Reducing to expression Form stringExpr\n"); }
+			|	functionInvoc								{ Trace("Reducing to expression Form functionInvoc\n"); }
+			|	ID											{ Trace("Reducing to expression Form ID\n"); }
+			|	ID '[' integerExpr ']'						{ Trace("Reducing to expression Form ID '[' integerExpr ']'\n"); }
 			;
 
-integerExpr:	INTEGER		{ Trace("Reducing to integerExpr\n"); }
+integerExpr:	INTEGER		{ Trace("Reducing to integerExpr Form INTEGER\n"); }
 			;
 
-realExpr:		REAL		{ Trace("Reducing to realExpr\n"); }
+realExpr:		REAL		{ Trace("Reducing to realExpr Form REAL\n"); }
 			;
 
-boolExpr:		KW_TRUE										{ Trace("Reducing to boolExpr\n"); }
-			|	KW_FALSE									{ Trace("Reducing to boolExpr\n"); }
-			|	'!' expression								{ Trace("Reducing to boolExpr\n"); }
-			|	expression '>' expression
-			|	expression '<' expression					{ Trace("Reducing to boolExpr\n"); }
-			|	expression OP_AND expression				{ Trace("Reducing to boolExpr\n"); }
-			|	expression OP_OR expression					{ Trace("Reducing to boolExpr\n"); }
-			|	expression OP_EQUAL expression				{ Trace("Reducing to boolExpr\n"); }
-			|	expression OP_NOT_EQUAL expression			{ Trace("Reducing to boolExpr\n"); }
-			|	expression OP_GREAT_EQUAL expression		{ Trace("Reducing to boolExpr\n"); }
-			|	expression OP_LESS_EQUAL expression			{ Trace("Reducing to boolExpr\n"); }
+boolExpr:		KW_TRUE										{ Trace("Reducing to boolExpr Form KW_TRUE\n"); }
+			|	KW_FALSE									{ Trace("Reducing to boolExpr Form KW_FALSE\n"); }
+			|	'!' expression								{ Trace("Reducing to boolExpr Form '!' expression\n"); }
+			|	expression '>' expression					{ Trace("Reducing to boolExpr Form expression '>' expression\n"); }
+			|	expression '<' expression					{ Trace("Reducing to boolExpr Form expression '<' expression\n"); }
+			|	boolExpr OP_AND boolExpr					{ Trace("Reducing to boolExpr Form boolExpr OP_AND boolExpr\n"); }
+			|	boolExpr OP_OR boolExpr						{ Trace("Reducing to boolExpr Form boolExpr OP_OR boolExpr\n"); }
+			|	expression OP_EQUAL expression				{ Trace("Reducing to boolExpr Form expression OP_EQUAL expression\n"); }
+			|	expression OP_NOT_EQUAL expression			{ Trace("Reducing to boolExpr Form expression OP_NOT_EQUAL expression\n"); }
+			|	expression OP_GREAT_EQUAL expression		{ Trace("Reducing to boolExpr Form expression OP_GREAT_EQUAL expression\n"); }
+			|	expression OP_LESS_EQUAL expression			{ Trace("Reducing to boolExpr Form expression OP_LESS_EQUAL expression\n"); }
 			;
 
-stringExpr:		STRING						{ Trace("Reducing to stringExpr\n"); }
+stringExpr:		STRING						{ Trace("Reducing to stringExpr Form STRING\n"); }
 			;
 
-functionInvoc:	ID '(' parameters ')'		{ Trace("Reducing to functionInvoc\n"); }
+functionInvoc:	ID '(' parameters ')'		{ Trace("Reducing to functionInvoc Form ID '(' parameters ')'\n"); }
 			;
 
-parameters:		expression ',' parameters	{ Trace("Reducing to parameters\n"); }
-			|	expression					{ Trace("Reducing to parameters\n"); }
+parameters:		expression ',' parameters	{ Trace("Reducing to parameters Form expression ',' parameters\n"); }
+			|	expression					{ Trace("Reducing to parameters Form expression\n"); }
 			;
 
-block:		'{' statements '}'				{ Trace("Reducing to block\n"); }
+block:		'{' statements '}'				{ Trace("Reducing to block Form '{' statements '}'\n"); }
 			;
 
-conditional:	KW_IF '(' boolExpr ')' block				{ Trace("Reducing to conditional\n"); }
-			|	KW_IF '(' boolExpr ')' block KW_ELSE block 	{ Trace("Reducing to conditional\n"); }
+conditional:	KW_IF '(' boolExpr ')' block				{ Trace("Reducing to conditional Form KW_IF '(' boolExpr ')' block\n"); }
+			|	KW_IF '(' boolExpr ')' block KW_ELSE block 	{ Trace("Reducing to conditional Form KW_IF '(' boolExpr ')' block KW_ELSE block\n"); }
 			;
 
-loop:			KW_WHILE '(' boolExpr ')' block				{ Trace("Reducing to loop\n"); }
+loop:			KW_WHILE '(' boolExpr ')' block				{ Trace("Reducing to loop Form KW_WHILE '(' boolExpr ')' block\n"); }
 			;
 
 %%
 
-
-
 int yyerror(const char *s)
 {
 	fprintf(stderr, "%s\n", s);
+	// exit(0)
 	return 0;
 }
 
 int main(void)
 {
-	// For test cpp function
-
-	// create();
-
 	yyparse();
-
-	// dump();
 
 	return 0;
 }

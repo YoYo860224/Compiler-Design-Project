@@ -1,49 +1,148 @@
 #include "symbol.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <vector>
 
-
-int create()
+symbolTables::symbolTables(/* args */)
 {
-    // symbolTable = malloc(MAX_SYMBOL*sizeof(char*));
-    return 0;
+	symbolTable st;
+	st.scopeName = "GOLOBAL";
+
+	tables.push_back(st);
 }
 
-int lookup(char* s)
+int symbolTables::push_table(std::string name)
 {
-    // for (int i = 0; i < symbolCount; i++)
-    // {
-    //     if (strcmp(symbolTable[i], s) == 0)
-    //         return i;
-    // }
-    // return -1;
-    return 0;
+	symbolTable st;
+	st.scopeName = name;
+
+	tables.push_back(st);
 }
 
-int insert(char* s)
+int symbolTables::pop_table()
 {
-    // if (lookup(s) == -1)
-    // {
-    //     symbolTable[symbolCount] = malloc(yyleng * sizeof(char));
-    //     strcpy(symbolTable[symbolCount], s);
-    //     symbolCount++;                
-    // }
-    // return symbolCount - 1;
-    return 0;
+	show();
+	tables.pop_back();
 }
 
-int dump()
+int symbolTables::addVariable(variableEntry var)
 {
-    // printf("\nSymbol Table:\n");
-    
-    // for (int i = 0; i < symbolCount; i++)
-    // {               
-    //     printf("%s\n", symbolTable[i]);
-    //     free(symbolTable[symbolCount]);
-    // }
+	tables.back().variableEntries.push_back(var);
+}
 
-    // free(symbolTable);
+int symbolTables::editVariable(variableEntry var)
+{
+	for (int i = tables.size(); i >= 0; i--)
+	{
+		for (int j = 0; j < tables.size(); j++)
+		{
+			variableEntry ve = tables[j].variableEntries[i];
+			if (ve.name == var.name)
+			{
+				if (!ve.isConst)
+					tables[j].variableEntries[i] = var;
+			}
+		}
+	}
+	return 0;
+}
 
-    // return symbolCount;
-    return 0;
+variableEntry symbolTables::lookup(std::string name)
+{    
+	for (int i = tables.size(); i >= 0; i--)
+	{
+		for (int j = 0; j < tables.size(); j++)
+		{
+			variableEntry ve = tables[j].variableEntries[i];
+			if (ve.name == name)
+				return ve;
+		}
+	}
+	variableEntry none;
+	none.type = T_NONE;
+	return none;
+}
+
+void symbolTables::show()
+{
+	std::cout << "==============================================" << "\n";
+	std::cout << "In \'" << tables.back().scopeName << "\' scope" << '\n';
+	std::cout << "----------------------------------------------" << "\n";
+
+	for (int i = 0; i < tables.size(); i++)
+	{		
+		variableEntry ve = tables.back().variableEntries[i];
+		for(int j = 0; j < ve.arrSize; j++)
+		{	
+			if (j != 0)
+				std::cout << "--------" << '\t';
+			if (ve.isConst)
+				std::cout << "Constant" << '\t';
+			else
+				std::cout << "Variable" << '\t';
+
+			switch (ve.type)
+			{		
+				case T_INT:
+					std::cout << "int" << '\t';
+					if (ve.isArr)
+					{
+						std::cout << ve.name << '[' << j << ']' << '\t';
+						std::cout << ve.data.intArr[j] << '\t';
+					}
+					else
+					{
+						std::cout << ve.name << '\t';
+						std::cout << ve.data.intVal << '\t';
+					}
+					break;
+
+				case T_FLOAT:
+					std::cout << "float" << '\t';
+					if (ve.isArr)
+					{
+						std::cout << ve.name << '[' << j << ']' << '\t';
+						std::cout << ve.data.floatArr[j] << '\t';
+					}
+					else
+					{
+						std::cout << ve.name << '\t';
+						std::cout << ve.data.floatVal << '\t';
+					}
+					break;
+
+				case T_BOOL:
+					std::cout << "bool" << '\t';
+					if (ve.isArr)
+					{
+						std::cout << ve.name << '[' << j << ']' << '\t';
+						std::cout << ve.data.boolArr[j] << '\t';
+					}
+					else
+					{
+						std::cout << ve.name << '\t';
+						std::cout << ve.data.boolVal << '\t';
+					}
+					break;
+
+				case T_STRING:
+					std::cout << "string" << '\t';
+					if (ve.isArr)
+					{
+						std::cout << ve.name << '[' << j << ']' << '\t';
+						std::cout << ve.data.stringArr[j] << '\t';
+					}
+					else
+					{
+						std::cout << ve.name << '\t';
+						std::cout << ve.data.stringVal << '\t';
+					}
+					break;
+
+				default:
+					break;
+			}
+		}		
+	}
+	std::cout << "==============================================" << "\n";
 }
