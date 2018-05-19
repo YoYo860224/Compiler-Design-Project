@@ -74,11 +74,7 @@ ID				{alphabet}({alphabet}|{dig})*
 				}
 
 <IN_STRING>\"   {
-					LIST;
-					printf("<%s: %s>\n", "STRING", stringTemp);
-					stringTemp[0] = '\0';
-					BEGIN(INITIAL);
-					return STRING;
+					tokenString(stringTemp);
 				}
 
 <IN_STRING>\n   {
@@ -232,8 +228,8 @@ int yywrap()
 	printf("%d:%s\n", linenum, buf);
 	if(stringTemp[0] != '\0')
 	{
-		printf("unterminated double quote string");
-		exit(-1);
+		printf("unterminated double quote string error\n");
+		exit(0);
 	}
 	return 1;
 }

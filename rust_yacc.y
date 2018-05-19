@@ -185,17 +185,21 @@ stringExpr:		STRING						{ Trace("Reducing to stringExpr\n"); }
 			;
 
 functionInvoc:	ID '(' parameters ')'		{ Trace("Reducing to functionInvoc\n"); }
+			;
 
 parameters:		expression ',' parameters	{ Trace("Reducing to parameters\n"); }
 			|	expression					{ Trace("Reducing to parameters\n"); }
 			;
 
 block:		'{' statements '}'				{ Trace("Reducing to block\n"); }
+			;
 
 conditional:	KW_IF '(' boolExpr ')' block				{ Trace("Reducing to conditional\n"); }
 			|	KW_IF '(' boolExpr ')' block KW_ELSE block 	{ Trace("Reducing to conditional\n"); }
+			;
 
 loop:			KW_WHILE '(' boolExpr ')' block				{ Trace("Reducing to loop\n"); }
+			;
 
 %%
 
