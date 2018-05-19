@@ -4,6 +4,7 @@ YACC = bison
 LEX_FILENAME = rust_lex.l
 YACC_FILENAME = rust_yacc.y
 OUTPUT_FILENAME = rust.exe
+TEST_FILENAME = ./test/fib.rust
 OTHER_SOURCE = symbol.cpp
 
 $(OUTPUT_FILENAME): clean lex.yy.o y.tab.o
@@ -26,4 +27,4 @@ clean:
 	rm -f lex.yy.cpp y.tab.cpp y.tab.h  *.o *.exe 
 
 run: 
-	./$(OUTPUT_FILENAME) < test.rs
+	./$(OUTPUT_FILENAME) < $(TEST_FILENAME)
