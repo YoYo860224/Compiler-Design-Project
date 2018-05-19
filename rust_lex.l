@@ -62,13 +62,13 @@ ID				{alphabet}({alphabet}|{dig})*
 %%
 
 {integer}       {
-					yylval.Token.tokenType = 0;
+					yylval.Token.tokenType = T_INT;
 					yylval.Token.intVal = atoi(yytext);
 					tokenType(INTEGER, yytext);
 				}
 
 {real}          {
-					yylval.Token.tokenType = 1;
+					yylval.Token.tokenType = T_FLOAT;
 					yylval.Token.floatVal = atof(yytext);
 					tokenType(REAL, yytext);
 				}
@@ -79,7 +79,7 @@ ID				{alphabet}({alphabet}|{dig})*
 				}
 
 <IN_STRING>\"   {
-					yylval.Token.tokenType = 3;
+					yylval.Token.tokenType = T_STRING;
 					yylval.Token.stringVal = strdup(yytext);
 					tokenString(stringTemp);
 				}
@@ -135,8 +135,8 @@ ID				{alphabet}({alphabet}|{dig})*
 "*="    { token(OP_MULTIPLICATION_ASSIGNMENT); }
 "/="    { token(OP_DIVISION_ASSIGNMENT); }
 
-"true"			{ yylval.Token.tokenType = 2; yylval.Token.boolVal = true; token(KW_TRUE); }
-"false"			{ yylval.Token.tokenType = 2; yylval.Token.boolVal = false; token(KW_FALSE); }
+"true"			{ yylval.Token.tokenType = T_BOOL; yylval.Token.boolVal = true; token(KW_TRUE); }
+"false"			{ yylval.Token.tokenType = T_BOOL; yylval.Token.boolVal = false; token(KW_FALSE); }
 
 "bool"			{ token(KW_BOOL); }
 "break"			{ token(KW_BREAK); }

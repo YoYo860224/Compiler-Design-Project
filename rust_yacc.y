@@ -19,7 +19,7 @@ symbolTables symTabs = symbolTables();
 
 /* tokens */
 %union{
-	struct{		
+	struct{
 		int tokenType; // 0:int 1:float 2:bool 3:string
 		union{
 			int intVal;
@@ -80,11 +80,12 @@ symbolTables symTabs = symbolTables();
 %token <Token> REAL
 %token <Token> ID
 
+%type <Token> expression type
 
 
 %start program
 
-%left OP_OR 
+%left OP_OR
 %left OP_AND
 %left '!'
 %left '>' '<' OP_GREAT_EQUAL OP_EQUAL OP_LESS_EQUAL OP_NOT_EQUAL
@@ -93,8 +94,14 @@ symbolTables symTabs = symbolTables();
 %nonassoc UMINUS
 
 %%
-program:		declarations functionDecs	{ Trace("Reducing to program Form declarations functionDecs\n"); }
-			|	functionDecs				{ Trace("Reducing to program Form functionDecs\n"); }
+program:		declarations functionDecs	{
+												Trace("Reducing to program Form declarations functionDecs\n");
+												symTabs.pop_table();
+											}
+			|	functionDecs				{
+												Trace("Reducing to program Form functionDecs\n");
+												symTabs.pop_table();
+											}
 			;
 
 declarations:	declaration					{ Trace("Reducing to declarations Form declaration\n"); }
@@ -106,20 +113,147 @@ declaration:	varDec					{ Trace("Reducing to declaration Form varDec\n"); }
 			|	arrDec					{ Trace("Reducing to declaration Form arrDec\n"); }
 			;
 
-type:			KW_STR					{ Trace("Reducing to type Form KW_STR\n"); }
-			|	KW_INT					{ Trace("Reducing to type Form KW_INT\n"); }
-			|	KW_BOOL					{ Trace("Reducing to type Form KW_BOOL\n"); }
-			|	KW_FLOAT				{ Trace("Reducing to type Form KW_FLOAT\n"); }
+type:			KW_INT					{
+											Trace("Reducing to type Form KW_INT\n");
+
+											$$.tokenType = T_INT;
+										}
+			|	KW_FLOAT				{
+											Trace("Reducing to type Form KW_FLOAT\n");
+
+											$$.tokenType = T_FLOAT;
+										}
+			|	KW_BOOL					{
+											Trace("Reducing to type Form KW_BOOL\n");
+
+											$$.tokenType = T_BOOL;
+										}
+			|	KW_STR					{
+											Trace("Reducing to type Form KW_STR\n");
+
+											$$.tokenType = T_STRING;
+										}
 			;
 
-varDec:			KW_LET KW_MUT ID ':' type ';'					{ Trace("Reducing to varDec Form KW_LET KW_MUT ID ':' type ';'\n"); }
-			|	KW_LET KW_MUT ID '=' expression	';'				{ Trace("Reducing to varDec Form KW_LET KW_MUT ID '=' expression ';'\n"); }
-			|	KW_LET KW_MUT ID ':' type '=' expression ';'	{ Trace("Reducing to varDec Form KW_LET KW_MUT ID ':' type '=' expression ';'\n"); }
-			|	KW_LET KW_MUT ID ';'							{ Trace("Reducing to varDec Form KW_LET KW_MUT ID ';'\n"); }
+varDec:			KW_LET KW_MUT ID ':' type ';'					{
+																	Trace("Reducing to varDec Form KW_LET KW_MUT ID ':' type ';'\n");
+																	variableEntry ve;
+																	ve.name = $3.stringVal;
+																	ve.type = $5.tokenType;
+																	ve.isConst = false;
+																	ve.isArr = false;
+																	ve.arrSize = 1;
+																}
+			|	KW_LET KW_MUT ID '=' expression	';'				{
+																	Trace("Reducing to varDec Form KW_LET KW_MUT ID '=' expression	';'\n");
+
+																	variableEntry ve;
+																	ve.name = $3.stringVal;
+																	ve.type = $5.tokenType;
+																	ve.isConst = false;
+																	ve.isArr = false;
+																	ve.arrSize = 1;
+
+																	if ($5.tokenType == T_INT)
+																		ve.data.intVal = $5.intVal;
+																	else if ($5.tokenType == T_FLOAT)
+																		ve.data.floatVal = $5.floatVal;
+																	else if ($5.tokenType == T_BOOL)
+																		ve.data.boolVal = $5.boolVal;
+																	else if ($5.tokenType == T_STRING)
+																		ve.data.stringVal = $5.stringVal;
+
+																	if (!symTabs.addVariable(ve))
+																		yyerror("Error: Re declaration.");
+																}
+			|	KW_LET KW_MUT ID ':' type '=' expression ';'	{
+																	Trace("Reducing to varDec Form KW_LET KW_MUT ID ':' type '=' expression ';'\n");
+																	variableEntry ve;
+																	ve.name = $3.stringVal;
+																	ve.type = $5.tokenType;
+																	ve.isConst = false;
+																	ve.isArr = false;
+																	ve.arrSize = 1;
+
+																	if ($5.tokenType == T_FLOAT && $7.tokenType == T_INT)
+																		ve.data.floatVal = $7.intVal;
+																	else if ($5.tokenType != $7.tokenType)
+																		yyerror("expression is not equal to expression");
+																	else if ($7.tokenType == T_INT)
+																		ve.data.intVal = $7.intVal;
+																	else if ($7.tokenType == T_FLOAT)
+																		ve.data.floatVal = $7.floatVal;
+																	else if ($7.tokenType == T_BOOL)
+																		ve.data.boolVal = $7.boolVal;
+																	else if ($7.tokenType == T_STRING)
+																		ve.data.stringVal = $7.stringVal;
+
+																	if (!symTabs.addVariable(ve))
+																		yyerror("Error: Re declaration.");
+																}
+			|	KW_LET KW_MUT ID ';'							{
+																	Trace("Reducing to varDec Form KW_LET KW_MUT ID ';'\n");
+																		variableEntry ve;
+																	ve.name = $3.stringVal;
+																	ve.type = T_NONE;
+																	ve.isConst = false;
+																	ve.isArr = false;
+																	ve.arrSize = 1;
+
+																	if (!symTabs.addVariable(ve))
+																		yyerror("Error: Re declaration.");
+																}
 			;
 
-constDec:		KW_LET ID '=' expression ';'			{ Trace("Reducing to constDec Form KW_LET ID '=' expression ';'\n"); }
-			|	KW_LET ID ':' type '=' expression ';'	{ Trace("Reducing to constDec Form KW_LET ID ':' type '=' expression ';'\n"); }
+constDec:		KW_LET ID '=' expression ';'			{
+															Trace("Reducing to constDec Form KW_LET ID '=' expression ';'\n");
+
+															variableEntry ve;
+															ve.name = $2.stringVal;
+															ve.type = $4.tokenType;
+															ve.isConst = true;
+															ve.isArr = false;
+															ve.arrSize = 1;
+
+															if ($4.tokenType == T_INT)
+																ve.data.intVal = $4.intVal;
+															else if ($4.tokenType == T_FLOAT)
+																ve.data.floatVal = $4.floatVal;
+															else if ($4.tokenType == T_BOOL)
+																ve.data.boolVal = $4.boolVal;
+															else if ($4.tokenType == T_STRING)
+																ve.data.stringVal = $4.stringVal;
+
+															if (!symTabs.addVariable(ve))
+																yyerror("Error: Re declaration.");
+														}
+			|	KW_LET ID ':' type '=' expression ';'	{
+															Trace("Reducing to constDec Form KW_LET ID ':' type '=' expression ';'\n");
+
+															variableEntry ve;
+															ve.name = $2.stringVal;
+															ve.type = $4.tokenType;
+															ve.isConst = true;
+															ve.isArr = false;
+															ve.arrSize = 1;
+
+															if ($4.tokenType == T_FLOAT && $6.tokenType == T_INT)
+																ve.data.floatVal = $6.intVal;
+															else if ($4.tokenType != $6.tokenType)
+																yyerror("expression is not equal to expression");
+															else if ($6.tokenType == T_INT)
+																ve.data.intVal = $6.intVal;
+															else if ($6.tokenType == T_FLOAT)
+																ve.data.floatVal = $6.floatVal;
+															else if ($6.tokenType == T_BOOL)
+																ve.data.boolVal = $6.boolVal;
+															else if ($6.tokenType == T_STRING)
+																ve.data.stringVal = $6.stringVal;
+
+
+															if (!symTabs.addVariable(ve))
+																yyerror("Error: Re declaration.");
+														}
 			;
 
 arrDec:			KW_LET KW_MUT ID '[' type ',' integerExpr ']' ';'	{ Trace("Reducing to arrDec Form KW_LET KW_MUT ID '[' type ',' integerExpr ']' ';'\n"); }
@@ -224,8 +358,8 @@ loop:			KW_WHILE '(' boolExpr ')' block				{ Trace("Reducing to loop Form KW_WHI
 
 int yyerror(const char *s)
 {
-	fprintf(stderr, "%s\n", s);
-	// exit(0)
+	fprintf(stderr, "ERROR: %s\n", s);
+	exit(0);
 	return 0;
 }
 

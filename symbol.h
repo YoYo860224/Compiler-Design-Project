@@ -8,12 +8,13 @@
 #include <stdio.h>
 
 enum TYPE
-{	
+{
 	T_NONE,
 	T_INT,
 	T_FLOAT,
 	T_BOOL,
 	T_STRING,
+	T_404
 };
 
 
@@ -31,11 +32,11 @@ typedef union{
 
 typedef struct{
 	std::string name;
-	TYPE type;
+	int type;
 	bool isConst;
 	bool isArr;
 	int arrSize;
-	union { 
+	union {
 		variableData data;
 	};
 } variableEntry;
