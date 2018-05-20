@@ -5,16 +5,20 @@
 #include "symbol.h"
 
 #define LIST    				strcat(buf, yytext)
-#define token(t)    			{ 								\
-									LIST; 						\
-									printf("<%s>\n", yytext); 	\
-									return t; 					\
+
+#define LEX_PRINT
+
+#ifdef LEX_PRINT
+#define token(t)    			{ 														\
+									LIST; 												\
+									printf("<%s>\n", yytext); 							\
+									return t; 											\
 								}
 
-#define tokenType(type, val) 	{ 										\
-									LIST; 								\
-									printf("<%s: %s>\n", #type, val); 	\
-									return type; 						\
+#define tokenType(type, val) 	{ 														\
+									LIST; 												\
+									printf("<%s: %s>\n", #type, val); 					\
+									return type; 										\
 								}
 
 #define tokenString(val) 		{ 														\
@@ -24,11 +28,29 @@
 									BEGIN(INITIAL);										\
 									return STRING;										\
 								}
+#else
+#define token(t)    			{ 														\
+									LIST; 												\
+									return t; 											\
+								}
+
+#define tokenType(type, val) 	{ 														\
+									LIST; 												\
+									return type; 										\
+								}
+
+#define tokenString(val) 		{ 														\
+									LIST; 												\
+									stringTemp[0] = '\0';	 							\
+									BEGIN(INITIAL);										\
+									return STRING;										\
+								}
+#endif
 
 #define MAX_LINE_LENG 1024
 
 extern "C"{
-	int yywrap();
+	int yywrap();				
 	int yylex();
 }
 
@@ -42,8 +64,8 @@ char stringTemp[MAX_LINE_LENG];
 
 %}
 
-alphabet		[a-zA-z]
-alphabets		[a-zA-z]+
+alphabet		[a-zA-Z]
+alphabets		[a-zA-Z]+
 
 dig				[0-9]
 digs			[0-9]+
@@ -86,7 +108,7 @@ ID				{alphabet}({alphabet}|{dig})*
 
 <IN_STRING>\n   {
 					LIST;
-					printf("%d: %s", linenum++, buf);
+					printf("%-4d: %s", linenum++, buf);
 					buf[0] = '\0';
 					strcat(stringTemp, "\n");
 				}
@@ -193,7 +215,7 @@ ID				{alphabet}({alphabet}|{dig})*
 
 <IN_COMMENT>\n			{
 							LIST;
-							printf("%d: %s", linenum++, buf);
+							printf("%-4d: %s", linenum++, buf);
 							buf[0] = '\0';
 						}
 
@@ -206,7 +228,7 @@ ID				{alphabet}({alphabet}|{dig})*
 
 <IN_LINECOMMENT>\n		{
 							LIST;
-							printf("%d: %s", linenum++, buf);
+							printf("%-4d: %s", linenum++, buf);
 							buf[0] = '\0';
 							BEGIN(INITIAL);
 						}
@@ -217,13 +239,13 @@ ID				{alphabet}({alphabet}|{dig})*
 
 \n|\r\n		{
 				LIST;
-				printf("%d: %s", linenum++, buf);
+				printf("%-4d: %s", linenum++, buf);
 				buf[0] = '\0';
 			}
 
 .			{
 				LIST;
-				printf("%d:%s\n", linenum, buf);
+				printf("%-4d:%s\n", linenum, buf);
 				printf("bad character:'%s'\n", yytext);
 				exit(-1);
 			}
@@ -233,7 +255,7 @@ ID				{alphabet}({alphabet}|{dig})*
 // called by lexical analyzer if end of the input file.
 int yywrap()
 {
-	printf("%d:%s\n", linenum, buf);
+	printf("%-4d:%s\n", linenum, buf);
 	if(stringTemp[0] != '\0')
 	{
 		printf("unterminated double quote string error\n");
