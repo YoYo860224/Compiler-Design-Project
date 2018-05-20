@@ -13,6 +13,7 @@ variableEntry ve_fn(std::string name, int type){
 	ve.isArr = false;
 	ve.isFn = true;
 	ve.arrSize = 1;
+	ve.data.intVal = 0;
 
 	return ve;
 }
@@ -27,7 +28,8 @@ variableEntry ve_basic(std::string name, int type, bool isConst){
 	ve.isArr = false;
 	ve.isFn = false;
 	ve.arrSize = 1;
-
+	ve.data.intVal = 0;
+	
 	return ve;
 }
 
@@ -41,6 +43,7 @@ variableEntry ve_basic_notInit(std::string name, int type, bool isConst){
 	ve.isArr = false;
 	ve.isFn = false;
 	ve.arrSize = 1;
+	ve.data.intVal = 0;
 
 	return ve;
 }
@@ -54,6 +57,7 @@ variableEntry ve_arr(std::string name, int type, bool isConst, int arrSize){
 	ve.isArr = true;
 	ve.isFn = false;
 	ve.arrSize = arrSize;
+	ve.data.intVal = 0;
 
 	return ve;
 }
@@ -208,6 +212,23 @@ int symbolTables::addVariable(variableEntry var)
 		return 0;
 
 	return 1;
+}
+
+int symbolTables::editVariable(variableEntry var)
+{
+	for (int i = tables.size() - 1; i >= 0; i--)
+	{
+		for (int j = 0; j < tables[i].variableEntries.size(); j++)
+		{
+			variableEntry ve = tables[i].variableEntries[j];
+			if (ve.name == var.name)
+			{
+				if (!ve.isConst)
+					tables[i].variableEntries[j] = var;
+			}
+		}
+	}
+	return 0;
 }
 
 int symbolTables::forPreloadFN(int type)

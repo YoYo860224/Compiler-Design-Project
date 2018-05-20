@@ -65,11 +65,12 @@ public:
 	int show_topTable();
 
 	int addVariable(variableEntry var);
+	int editVariable(variableEntry var);
 	int forPreloadFN(int type);
 
 	variableEntry lookup(std::string name);
 	variableEntry lookupForNowScope(std::string name);
-	
+
 };
 
 #endif

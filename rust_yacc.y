@@ -17,6 +17,7 @@
 extern "C" {
 	int yyerror(const char *s);
 	extern int yylex();
+	extern int yylineno;
 }
 
 symbolTables symTabs = symbolTables();
@@ -87,7 +88,7 @@ symbolTables symTabs = symbolTables();
 %token <Token> REAL
 %token <Token> ID
 
-%type <Token> expression type integerExpr arrDec realExpr boolExpr stringExpr
+%type <Token> expression type integerExpr arrDec realExpr boolExpr stringExpr functionInvoc
 
 
 %start program
@@ -275,21 +276,20 @@ functionDecs:	functionDec								{ Trace("Reducing to functionDecs Form function
 			;
 
 functionDec:	KW_FN ID '('			{
-											Trace("Reducing to functionDec Form KW_FN ID '('\n");
 											variableEntry ve = ve_fn($2.stringVal, T_NONE);
 											if (!symTabs.addVariable(ve))
 												yyerror("Re declaration.");
 											symTabs.push_table($2.stringVal);
 										}
-			 	formalArgs ')' fnType 	{ Trace("Reducing to functionDec Form formalArgs ')' fnType\n"); }
+			 	formalArgs ')' fnType 	
 				fnScope					{ 
-											Trace("Reducing to functionDec Form fnScope\n");
+											Trace("Reducing to functionDec Form KW_FN ID '(' formalArgs ')' fnType fnScope\n");
 											symTabs.pop_table();
 										}
 				;
 
 formalArgs:		ID ':' type 				{
-												Trace("Reducing to formalArgs Form ID ':' type ',' formalArgs\n");
+												Trace("Reducing to formalArgs Form ID ':' type\n");
 
 												variableEntry ve = ve_basic($1.stringVal, $3.tokenType, false);
 
@@ -308,7 +308,7 @@ formalArgs:		ID ':' type 				{
 			;
 
 fnType:			'-' '>' type				{ 
-												Trace("Reducing to fnScope Form '{' '}'\n");
+												Trace("Reducing to fnScope Form '-' '>' type\n");
 												symTabs.forPreloadFN($3.tokenType);
 											}					
 			|	%empty						{ Trace("Reducing to fnType Form empty\n"); }
@@ -327,7 +327,30 @@ statements:		statement statements		{ Trace("Reducing to statements Form statemen
 			|	statement					{ Trace("Reducing to statements Form statement\n"); }
 			;
 
-statement:		ID '=' expression ';'						{ Trace("Reducing to statement Form ID '=' expression ';'\n"); }
+statement:		ID '=' expression ';'						{ 
+																Trace("Reducing to statement Form ID '=' expression ';'\n"); 
+																variableEntry ve = symTabs.lookup($1.stringVal);
+																if (ve.type == T_404)
+																	yyerror("ID not found");
+
+																if (ve.type == T_NONE)
+																	ve.type = $3.tokenType;
+																else if (ve.type == T_FLOAT && $3.tokenType == T_INT)
+																		ve.data.floatVal = $3.intVal;
+																else if (ve.type != $3.tokenType)
+																	yyerror("expression is not equal to expression");
+																else if (ve.type == T_INT)
+																	ve.data.intVal = $3.intVal;
+																else if (ve.type == T_FLOAT)
+																	ve.data.floatVal = $3.floatVal;
+																else if (ve.type == T_BOOL)
+																	ve.data.boolVal = $3.boolVal;
+																else if (ve.type == T_STRING)
+																	ve.data.stringVal = $3.stringVal;
+
+																ve.isInit = true;
+																symTabs.editVariable(ve);
+															}
 			|	ID '[' expression']' '=' expression ';'		{ Trace("Reducing to statement Form ID '[' expression']' '=' expression ';'\n"); }
 			|	KW_PRINT expression	';'						{ Trace("Reducing to statement Form KW_PRINT expression	';'\n"); }
 			|	KW_PRINTLN expression ';'					{ Trace("Reducing to statement Form KW_PRINTLN expression ';'\n"); }
@@ -350,7 +373,12 @@ expression:		'-' expression %prec UMINUS					{ Trace("Reducing to expression For
 			|	realExpr									{ Trace("Reducing to expression Form realExpr\n"); }
 			|	boolExpr									{ Trace("Reducing to expression Form boolExpr\n"); }
 			|	stringExpr									{ Trace("Reducing to expression Form stringExpr\n"); }
-			|	functionInvoc								{ Trace("Reducing to expression Form functionInvoc\n"); }
+			|	functionInvoc								{ 
+																Trace("Reducing to expression Form functionInvoc\n"); 
+																if ($1.tokenType == T_NONE)
+																	yyerror("The function no return, can not be expression.");
+																$$.tokenType = $1.tokenType;
+															}
 			|	ID											{ 
 																Trace("Reducing to expression Form ID\n");
 
@@ -479,7 +507,14 @@ boolExpr:		KW_TRUE										{
 stringExpr:		STRING						{ Trace("Reducing to stringExpr Form STRING\n"); }
 			;
 
-functionInvoc:	ID '(' parameters ')'		{ Trace("Reducing to functionInvoc Form ID '(' parameters ')'\n"); }
+functionInvoc:	ID '(' parameters ')'		{ 
+												Trace("Reducing to functionInvoc Form ID '(' parameters ')'\n");
+												variableEntry ve = symTabs.lookup($1.stringVal);
+												if (ve.type == T_404)
+													yyerror("function ID not found");
+
+												$$.tokenType = ve.type;
+											}
 			;
 
 parameters:		expression ',' parameters	{ Trace("Reducing to parameters Form expression ',' parameters\n"); }
@@ -507,7 +542,7 @@ loop:			KW_WHILE '(' boolExpr ')' block				{ Trace("Reducing to loop Form KW_WHI
 
 int yyerror(const char *s)
 {
-	fprintf(stderr, "ERROR: %s\n", s);
+	fprintf(stderr, "ERROR: %s at line number:%d\n", s, yylineno);
 	exit(0);
 	return 0;
 }

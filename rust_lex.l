@@ -55,7 +55,6 @@ extern "C"{
 }
 
 // For print lines.
-int linenum = 1;
 char buf[MAX_LINE_LENG];
 
 // For state of comment and string.
@@ -108,7 +107,7 @@ ID				{alphabet}({alphabet}|{dig})*
 
 <IN_STRING>\n   {
 					LIST;
-					printf("%-4d: %s", linenum++, buf);
+					printf("%-4d: %s", yylineno++, buf);
 					buf[0] = '\0';
 					strcat(stringTemp, "\n");
 				}
@@ -215,7 +214,7 @@ ID				{alphabet}({alphabet}|{dig})*
 
 <IN_COMMENT>\n			{
 							LIST;
-							printf("%-4d: %s", linenum++, buf);
+							printf("%-4d: %s", yylineno++, buf);
 							buf[0] = '\0';
 						}
 
@@ -228,7 +227,7 @@ ID				{alphabet}({alphabet}|{dig})*
 
 <IN_LINECOMMENT>\n		{
 							LIST;
-							printf("%-4d: %s", linenum++, buf);
+							printf("%-4d: %s", yylineno++, buf);
 							buf[0] = '\0';
 							BEGIN(INITIAL);
 						}
@@ -239,13 +238,13 @@ ID				{alphabet}({alphabet}|{dig})*
 
 \n|\r\n		{
 				LIST;
-				printf("%-4d: %s", linenum++, buf);
+				printf("%-4d: %s", yylineno++, buf);
 				buf[0] = '\0';
 			}
 
 .			{
 				LIST;
-				printf("%-4d:%s\n", linenum, buf);
+				printf("%-4d:%s\n", yylineno, buf);
 				printf("bad character:'%s'\n", yytext);
 				exit(-1);
 			}
@@ -255,7 +254,7 @@ ID				{alphabet}({alphabet}|{dig})*
 // called by lexical analyzer if end of the input file.
 int yywrap()
 {
-	printf("%-4d:%s\n", linenum, buf);
+	printf("%-4d:%s\n", yylineno, buf);
 	if(stringTemp[0] != '\0')
 	{
 		printf("unterminated double quote string error\n");
