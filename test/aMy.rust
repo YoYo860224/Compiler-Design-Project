@@ -1,10 +1,6 @@
-/*
- * Example with Functions
- */
-
 // variables
 let mut c;
-let mut a = 5;
+let mut a = true && false || true;
 
     
 // function declaration

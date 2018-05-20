@@ -1,20 +1,5 @@
 // Hello World Example
-let a: float = 4;
-let b: int = 7;
-let c = "12231";
-let mut d = 10;
-
-let mut af[int, 3];
-let mut bf[float, 3];
-let mut cf[bool, 3];
-let mut df[str, 3];
-
-fn hello(x: int) {
-  let mut e = x;
-  let mut d = 10;
-}
-
-fn main(x: int) {
+fn main() {
   // Print text to the console
-  let mut e = 10;
+  println ("Hello World");
 }

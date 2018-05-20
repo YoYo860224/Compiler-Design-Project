@@ -566,6 +566,8 @@ boolExpr:		KW_TRUE										{
 																	$$.boolVal = $1.floatVal == $3.floatVal;
 																else if ($1.tokenType == T_STRING && $3.tokenType == T_STRING)
 																	$$.boolVal = $1.stringVal == $3.stringVal;
+																else if ($1.tokenType == T_BOOL && $3.tokenType == T_BOOL)
+																	$$.boolVal = $1.boolVal == $3.boolVal;
 																else 
 																	yyerror("'==' arg type error.");	
 															}
@@ -583,6 +585,8 @@ boolExpr:		KW_TRUE										{
 																	$$.boolVal = $1.floatVal != $3.floatVal;
 																else if ($1.tokenType == T_STRING && $3.tokenType == T_STRING)
 																	$$.boolVal = $1.stringVal != $3.stringVal;
+																else if ($1.tokenType == T_BOOL && $3.tokenType == T_BOOL)
+																	$$.boolVal = $1.boolVal != $3.boolVal;
 																else 
 																	yyerror("'!=' arg type error.");	
 															}
