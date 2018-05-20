@@ -16,7 +16,7 @@ variableEntry ve_basic(std::string name, int type, bool isConst){
 	return ve;
 }
 
-variableEntry ve_Arr(std::string name, int type, bool isConst, int arrSize){
+variableEntry ve_arr(std::string name, int type, bool isConst, int arrSize){
 	variableEntry ve;
 	ve.name = name;
 	ve.type = type;
@@ -40,7 +40,7 @@ variableEntry ve_basic_notInit(std::string name, int type, bool isConst){
 	return ve;
 }
 
-variableEntry ve_Arr_notInit(std::string name, int type, bool isConst, int arrSize){
+variableEntry ve_arr_notInit(std::string name, int type, bool isConst, int arrSize){
 	variableEntry ve;
 	ve.name = name;
 	ve.type = type;
@@ -97,7 +97,7 @@ int symbolTables::show_topTable()
 					std::cout << "Constant" << '\t';
 				else
 					std::cout << "Variable" << '\t';
-					
+
 			switch (ve.type)
 			{
 				case T_NONE:
@@ -197,7 +197,7 @@ int symbolTables::show_topTable()
 
 int symbolTables::addVariable(variableEntry var)
 {
-	if (lookup(var.name).type == T_404)
+	if (lookupForNowScope(var.name).type == T_404)
 		tables.back().variableEntries.push_back(var);
 	else
 		return 0;
@@ -238,3 +238,17 @@ variableEntry symbolTables::lookup(std::string name)
 	return notFound;
 }
 
+
+variableEntry symbolTables::lookupForNowScope(std::string name)
+{
+	for (int j = 0; j < tables.back().variableEntries.size(); j++)
+	{
+		variableEntry ve = tables.back().variableEntries[j];
+		if (ve.name == name)
+			return ve;
+	}
+
+	variableEntry notFound;
+	notFound.type = T_404;
+	return notFound;
+}

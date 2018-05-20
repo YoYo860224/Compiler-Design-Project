@@ -43,9 +43,9 @@ typedef struct variableEntry{
 } variableEntry;
 
 variableEntry ve_basic(std::string name, int type, bool isConst);
-variableEntry ve_Arr(std::string name, int type, bool isConst, int arrSize);
+variableEntry ve_arr(std::string name, int type, bool isConst, int arrSize);
 variableEntry ve_basic_notInit(std::string name, int type, bool isConst);
-variableEntry ve_Arr_notInit(std::string name, int type, bool isConst, int arrSize);
+variableEntry ve_arr_notInit(std::string name, int type, bool isConst, int arrSize);
 
 typedef struct{
 	std::string scopeName;
@@ -66,8 +66,9 @@ public:
 
 	int addVariable(variableEntry var);
 	int editVariable(variableEntry var);
-	variableEntry lookup(std::string name);
 
+	variableEntry lookup(std::string name);
+	variableEntry lookupForNowScope(std::string name);
 	
 };
 

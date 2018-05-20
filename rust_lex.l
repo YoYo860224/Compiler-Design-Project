@@ -6,7 +6,7 @@
 
 #define LIST    				strcat(buf, yytext)
 
-#define LEX_PRINT
+// #define LEX_PRINT
 
 #ifdef LEX_PRINT
 #define token(t)    			{ 														\

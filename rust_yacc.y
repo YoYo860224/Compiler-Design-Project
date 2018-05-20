@@ -238,10 +238,10 @@ constDec:		KW_LET ID '=' expression ';'			{
 														}
 			;
 
-arrDec:			KW_LET KW_MUT ID '[' type ',' integerExpr ']' ';'	{ 
-																		Trace("Reducing to arrDec Form KW_LET KW_MUT ID '[' type ',' integerExpr ']' ';'\n"); 
+arrDec:			KW_LET KW_MUT ID '[' type ',' integerExpr ']' ';'	{
+																		Trace("Reducing to arrDec Form KW_LET KW_MUT ID '[' type ',' integerExpr ']' ';'\n");
 
-																		variableEntry ve = ve_Arr_notInit( $3.stringVal, $5.tokenType, false, $7.intVal);
+																		variableEntry ve = ve_arr_notInit( $3.stringVal, $5.tokenType, false, $7.intVal);
 
 																		if (!symTabs.addVariable(ve))
 																			yyerror("Error: Re declaration.");
@@ -253,22 +253,33 @@ functionDecs:	functionDec								{ Trace("Reducing to functionDecs Form function
 			;
 
 functionDec:	KW_FN ID '(' ')' 									{ symTabs.push_table($2.stringVal); }
-				fnScope												{ 
+				fnScope												{
 																		Trace("Reducing to functionDec Form KW_FN ID '('  ')' fnScope\n");
 																		symTabs.pop_table();
 																	}
-			|	KW_FN ID '('										{ symTabs.push_table($2.stringVal); }											
-			 	formalArgs ')' fnScope								{ 
-																		Trace("Reducing to functionDec Form KW_FN ID '(' formalArgs ')' fnScope\n"); 
+			|	KW_FN ID '('										{ symTabs.push_table($2.stringVal); }
+			 	formalArgs ')' fnScope								{
+																		Trace("Reducing to functionDec Form KW_FN ID '(' formalArgs ')' fnScope\n");
 																		symTabs.pop_table();
 																	}
 			;
 
-formalArgs:		ID ':' type					{ 
+formalArgs:		ID ':' type					{
 												Trace("Reducing to formalArgs Form ID ':' type\n");
 
+												variableEntry ve = ve_basic_notInit( $1.stringVal, $3.tokenType, false);
+
+												if (!symTabs.addVariable(ve))
+													yyerror("Error: Re declaration.");
 											}
-			|	ID ':' type ',' formalArgs	{ Trace("Reducing to formalArgs Form ID ':' type ',' formalArgs\n"); }
+			|	ID ':' type ',' formalArgs	{
+												Trace("Reducing to formalArgs Form ID ':' type ',' formalArgs\n");
+
+												variableEntry ve = ve_basic_notInit( $1.stringVal, $3.tokenType, false);
+
+												if (!symTabs.addVariable(ve))
+													yyerror("Error: Re declaration.");
+											}
 			;
 
 fnScope:		'{' '}'								{ Trace("Reducing to fnScope Form '{' '}'\n"); }
