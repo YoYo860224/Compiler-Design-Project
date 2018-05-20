@@ -20,7 +20,7 @@ extern "C" {
 	extern int yylineno;
 }
 
-symbolTables symTabs = symbolTables();																
+symbolTables symTabs = symbolTables();
 
 %}
 
@@ -264,8 +264,8 @@ arrDec:			KW_LET KW_MUT ID '[' type ',' expression ']' ';'	{
 																				ve.data.stringArr[i] = new char[0];
 																				//ve.data.stringArr[i][0] = '0';
 																			}
-																		}	
-																			
+																		}
+
 																		if (!symTabs.addVariable(ve))
 																			yyerror("Re declaration.");
 																	}
@@ -281,8 +281,8 @@ functionDec:	KW_FN ID '('			{
 												yyerror("Re declaration.");
 											symTabs.push_table($2.stringVal);
 										}
-			 	formalArgs ')' fnType 	
-				fnScope					{ 
+			 	formalArgs ')' fnType
+				fnScope					{
 											Trace("Reducing to functionDec Form KW_FN ID '(' formalArgs ')' fnType fnScope\n");
 											symTabs.pop_table();
 										}
@@ -307,10 +307,10 @@ formalArgs:		ID ':' type 				{
 			|	%empty						{ Trace("Reducing to formalArgs Form empty ':' type\n"); }
 			;
 
-fnType:			'-' '>' type				{ 
+fnType:			'-' '>' type				{
 												Trace("Reducing to fnScope Form '-' '>' type\n");
 												symTabs.forPreloadFN($3.tokenType);
-											}					
+											}
 			|	%empty						{ Trace("Reducing to fnType Form empty\n"); }
 
 fnScope:		'{' scopeContent '}'		{ Trace("Reducing to fnScope Form '{' scopeContent '}'\n"); }
@@ -327,8 +327,8 @@ statements:		statement statements		{ Trace("Reducing to statements Form statemen
 			|	statement					{ Trace("Reducing to statements Form statement\n"); }
 			;
 
-statement:		ID '=' expression ';'						{ 
-																Trace("Reducing to statement Form ID '=' expression ';'\n"); 
+statement:		ID '=' expression ';'						{
+																Trace("Reducing to statement Form ID '=' expression ';'\n");
 																variableEntry ve = symTabs.lookup($1.stringVal);
 																if (ve.type == T_404)
 																	yyerror("ID not found");
@@ -350,7 +350,7 @@ statement:		ID '=' expression ';'						{
 																ve.isInit = true;
 																symTabs.editVariable(ve);
 															}
-			|	ID '[' expression']' '=' expression ';'		{ 
+			|	ID '[' expression']' '=' expression ';'		{
 																Trace("Reducing to statement Form ID '[' expression']' '=' expression ';'\n");
 
 																variableEntry ve = symTabs.lookup($1.stringVal);
@@ -394,24 +394,166 @@ statement:		ID '=' expression ';'						{
 			|	functionInvoc								{ Trace("Reducing to statement Form functionInvoc\n"); }
 			;
 
-expression:		'-' expression %prec UMINUS					{ Trace("Reducing to expression Form '-' expression\n"); }
-			|	expression '+' expression					{ Trace("Reducing to expression Form expression '+' expression\n"); }
-			|	expression '-' expression					{ Trace("Reducing to expression Form expression '-' expression\n"); }
-			|	expression '*' expression					{ Trace("Reducing to expression Form expression '*' expression\n"); }
-			|	expression '/' expression					{ Trace("Reducing to expression Form expression '/' expression\n"); }
-			|	expression '%' expression					{ Trace("Reducing to expression Form expression '%%' expression\n"); }
-			|	'(' expression ')'							{ Trace("Reducing to expression Form '(' expression ')'\n"); }
+expression:		'-' expression %prec UMINUS					{
+																Trace("Reducing to expression Form '-' expression\n");
+																$$ = $2;
+																if ($2.tokenType == T_INT)
+																	$2.intVal *= -1;
+																else if ($2.tokenType == T_FLOAT)
+																	$2.floatVal *= -1;
+																else
+																	yyerror("'-' arg type error.");
+															}
+			|	expression '+' expression					{
+																Trace("Reducing to expression Form expression '+' expression\n");
+																if ($1.notInit)
+																	yyerror("'+' left arg is not initial.");
+																if ($3.notInit)
+																	yyerror("'+' right arg is not initial.");
+
+																if ($1.tokenType == T_INT && $3.tokenType == T_INT)
+																{
+																	$$.tokenType = T_INT;
+																	$$.intVal = $1.intVal + $3.intVal;
+																}
+																else if ($1.tokenType == T_FLOAT && $3.tokenType == T_FLOAT)
+																{
+																	$$.tokenType = T_FLOAT;
+																	$$.floatVal = $1.floatVal + $3.floatVal;
+																}
+																else if ($1.tokenType == T_INT && $3.tokenType == T_FLOAT)
+																{
+																	$$.tokenType = T_FLOAT;
+																	$$.floatVal = $1.intVal + $3.floatVal;
+																}
+																else if ($1.tokenType == T_FLOAT && $3.tokenType == T_INT)
+																{
+																	$$.tokenType = T_FLOAT;
+																	$$.floatVal = $1.floatVal + $3.intVal;
+																}
+																else
+																	yyerror("'+' arg type error.");
+															}
+			|	expression '-' expression					{
+																Trace("Reducing to expression Form expression '-' expression\n");
+																if ($1.notInit)
+																	yyerror("'-' left arg is not initial.");
+																if ($3.notInit)
+																	yyerror("'-' right arg is not initial.");
+
+																if ($1.tokenType == T_INT && $3.tokenType == T_INT)
+																{
+																	$$.tokenType = T_INT;
+																	$$.intVal = $1.intVal - $3.intVal;
+																}
+																else if ($1.tokenType == T_FLOAT && $3.tokenType == T_FLOAT)
+																{
+																	$$.tokenType = T_FLOAT;
+																	$$.floatVal = $1.floatVal - $3.floatVal;
+																}
+																else if ($1.tokenType == T_INT && $3.tokenType == T_FLOAT)
+																{
+																	$$.tokenType = T_FLOAT;
+																	$$.floatVal = $1.intVal - $3.floatVal;
+																}
+																else if ($1.tokenType == T_FLOAT && $3.tokenType == T_INT)
+																{
+																	$$.tokenType = T_FLOAT;
+																	$$.floatVal = $1.floatVal - $3.intVal;
+																}
+																else
+																	yyerror("'-' arg type error.");
+															}
+			|	expression '*' expression					{
+																Trace("Reducing to expression Form expression '*' expression\n");
+																if ($1.notInit)
+																	yyerror("'*' left arg is not initial.");
+																if ($3.notInit)
+																	yyerror("'*' right arg is not initial.");
+
+																if ($1.tokenType == T_INT && $3.tokenType == T_INT)
+																{
+																	$$.tokenType = T_INT;
+																	$$.intVal = $1.intVal * $3.intVal;
+																}
+																else if ($1.tokenType == T_FLOAT && $3.tokenType == T_FLOAT)
+																{
+																	$$.tokenType = T_FLOAT;
+																	$$.floatVal = $1.floatVal * $3.floatVal;
+																}
+																else if ($1.tokenType == T_INT && $3.tokenType == T_FLOAT)
+																{
+																	$$.tokenType = T_FLOAT;
+																	$$.floatVal = $1.intVal * $3.floatVal;
+																}
+																else if ($1.tokenType == T_FLOAT && $3.tokenType == T_INT)
+																{
+																	$$.tokenType = T_FLOAT;
+																	$$.floatVal = $1.floatVal * $3.intVal;
+																}
+																else
+																	yyerror("'*' arg type error.");
+															}
+			|	expression '/' expression					{
+																Trace("Reducing to expression Form expression '/' expression\n");
+																if ($1.notInit)
+																	yyerror("'/' left arg is not initial.");
+																if ($3.notInit)
+																	yyerror("'/' right arg is not initial.");
+
+																if ($1.tokenType == T_INT && $3.tokenType == T_INT)
+																{
+																	$$.tokenType = T_INT;
+																	$$.intVal = $1.intVal / $3.intVal;
+																}
+																else if ($1.tokenType == T_FLOAT && $3.tokenType == T_FLOAT)
+																{
+																	$$.tokenType = T_FLOAT;
+																	$$.floatVal = $1.floatVal / $3.floatVal;
+																}
+																else if ($1.tokenType == T_INT && $3.tokenType == T_FLOAT)
+																{
+																	$$.tokenType = T_FLOAT;
+																	$$.floatVal = $1.intVal / $3.floatVal;
+																}
+																else if ($1.tokenType == T_FLOAT && $3.tokenType == T_INT)
+																{
+																	$$.tokenType = T_FLOAT;
+																	$$.floatVal = $1.floatVal / $3.intVal;
+																}
+																else
+																	yyerror("'/' arg type error.");
+															}
+			|	expression '%' expression					{
+																Trace("Reducing to expression Form expression '%%' expression\n");
+																if ($1.notInit)
+																	yyerror("'%' left arg is not initial.");
+																if ($3.notInit)
+																	yyerror("'%' right arg is not initial.");
+
+																if ($1.tokenType == T_INT && $3.tokenType == T_INT)
+																{
+																	$$.tokenType = T_INT;
+																	$$.intVal = $1.intVal % $3.intVal;
+																}
+																else
+																	yyerror("'%' arg type error.");
+															}
+			|	'(' expression ')'							{
+																Trace("Reducing to expression Form '(' expression ')'\n");
+																$$ = $2;
+															}
 			|	integerExpr									{ Trace("Reducing to expression Form integerExpr\n"); }
 			|	realExpr									{ Trace("Reducing to expression Form realExpr\n"); }
 			|	boolExpr									{ Trace("Reducing to expression Form boolExpr\n"); }
 			|	stringExpr									{ Trace("Reducing to expression Form stringExpr\n"); }
-			|	functionInvoc								{ 
-																Trace("Reducing to expression Form functionInvoc\n"); 
+			|	functionInvoc								{
+																Trace("Reducing to expression Form functionInvoc\n");
 																if ($1.tokenType == T_NONE)
 																	yyerror("The function no return, can not be expression.");
 																$$.tokenType = $1.tokenType;
 															}
-			|	ID											{ 
+			|	ID											{
 																Trace("Reducing to expression Form ID\n");
 
 																variableEntry ve = symTabs.lookup($1.stringVal);
@@ -424,22 +566,22 @@ expression:		'-' expression %prec UMINUS					{ Trace("Reducing to expression For
 																else
 																{
 																	if (ve.type == T_INT)
-																	{	
+																	{
 																		$$.tokenType = T_INT;
 																		$$.intVal = ve.data.intVal;
 																	}
 																	else if (ve.type == T_FLOAT)
-																	{	
+																	{
 																		$$.tokenType = T_FLOAT;
 																		$$.floatVal = ve.data.floatVal;
 																	}
 																	else if (ve.type == T_BOOL)
-																	{	
+																	{
 																		$$.tokenType = T_BOOL;
 																		$$.boolVal = ve.data.boolVal;
 																	}
 																	else if (ve.type == T_STRING)
-																	{	
+																	{
 																		$$.tokenType = T_STRING;
 																		$$.stringVal = ve.data.stringVal;
 																	}
@@ -462,22 +604,22 @@ expression:		'-' expression %prec UMINUS					{ Trace("Reducing to expression For
 																else
 																{
 																	if (ve.type == T_INT)
-																	{	
+																	{
 																		$$.tokenType = T_INT;
 																		$$.intVal = ve.data.intArr[index];
 																	}
 																	else if (ve.type == T_FLOAT)
-																	{	
+																	{
 																		$$.tokenType = T_FLOAT;
 																		$$.floatVal = ve.data.floatArr[index];
 																	}
 																	else if (ve.type == T_BOOL)
-																	{	
+																	{
 																		$$.tokenType = T_BOOL;
 																		$$.boolVal = ve.data.boolArr[index];
 																	}
 																	else if (ve.type == T_STRING)
-																	{	
+																	{
 																		$$.tokenType = T_STRING;
 																		$$.stringVal = ve.data.stringArr[index];
 																	}
@@ -493,22 +635,22 @@ integerExpr:	INTEGER		{ Trace("Reducing to integerExpr Form INTEGER\n"); }
 realExpr:		REAL		{ Trace("Reducing to realExpr Form REAL\n"); }
 			;
 
-boolExpr:		KW_TRUE										{ 
-																Trace("Reducing to boolExpr Form KW_TRUE\n"); 
-																$$.tokenType = T_BOOL; 
+boolExpr:		KW_TRUE										{
+																Trace("Reducing to boolExpr Form KW_TRUE\n");
+																$$.tokenType = T_BOOL;
 																$$.boolVal = true;
 															}
-			|	KW_FALSE									{ 
-																Trace("Reducing to boolExpr Form KW_FALSE\n"); 
-																$$.tokenType = T_BOOL; 
+			|	KW_FALSE									{
+																Trace("Reducing to boolExpr Form KW_FALSE\n");
+																$$.tokenType = T_BOOL;
 																$$.boolVal = false;
 															}
-			|	'!' expression								{ 
+			|	'!' expression								{
 																Trace("Reducing to boolExpr Form '!' expression\n");
-																$$.tokenType = T_BOOL; 
+																$$.tokenType = T_BOOL;
 																$$.boolVal = !$2.boolVal;
 															}
-			|	expression '>' expression					{ 
+			|	expression '>' expression					{
 																Trace("Reducing to boolExpr Form expression '>' expression\n");
 																$$.tokenType = T_BOOL;
 																if ($1.notInit)
@@ -522,11 +664,11 @@ boolExpr:		KW_TRUE										{
 																	$$.boolVal = $1.floatVal > $3.floatVal;
 																else if ($1.tokenType == T_STRING && $3.tokenType == T_STRING)
 																	$$.boolVal = $1.stringVal > $3.stringVal;
-																else 
-																	yyerror("'>' arg type error.");						
+																else
+																	yyerror("'>' arg type error.");
 															}
-			|	expression '<' expression					{ 
-																Trace("Reducing to boolExpr Form expression '<' expression\n"); 
+			|	expression '<' expression					{
+																Trace("Reducing to boolExpr Form expression '<' expression\n");
 																$$.tokenType = T_BOOL;
 																if ($1.notInit)
 																	yyerror("'<' left arg is not initial.");
@@ -539,21 +681,21 @@ boolExpr:		KW_TRUE										{
 																	$$.boolVal = $1.floatVal < $3.floatVal;
 																else if ($1.tokenType == T_STRING && $3.tokenType == T_STRING)
 																	$$.boolVal = $1.stringVal < $3.stringVal;
-																else 
-																	yyerror("'<' arg type error.");	
+																else
+																	yyerror("'<' arg type error.");
 															}
-			|	boolExpr OP_AND boolExpr					{ 
-																Trace("Reducing to boolExpr Form boolExpr OP_AND boolExpr\n"); 
+			|	boolExpr OP_AND boolExpr					{
+																Trace("Reducing to boolExpr Form boolExpr OP_AND boolExpr\n");
 																$$.tokenType = T_BOOL;
 																$$.boolVal = $1.boolVal && $3.boolVal;
 															}
-			|	boolExpr OP_OR boolExpr						{ 
-																Trace("Reducing to boolExpr Form boolExpr OP_OR boolExpr\n"); 
+			|	boolExpr OP_OR boolExpr						{
+																Trace("Reducing to boolExpr Form boolExpr OP_OR boolExpr\n");
 																$$.tokenType = T_BOOL;
 																$$.boolVal = $1.boolVal || $3.boolVal;
 															}
-			|	expression OP_EQUAL expression				{ 
-																Trace("Reducing to boolExpr Form expression OP_EQUAL expression\n"); 
+			|	expression OP_EQUAL expression				{
+																Trace("Reducing to boolExpr Form expression OP_EQUAL expression\n");
 																$$.tokenType = T_BOOL;
 																if ($1.notInit)
 																	yyerror("'==' left arg is not initial.");
@@ -568,11 +710,11 @@ boolExpr:		KW_TRUE										{
 																	$$.boolVal = $1.stringVal == $3.stringVal;
 																else if ($1.tokenType == T_BOOL && $3.tokenType == T_BOOL)
 																	$$.boolVal = $1.boolVal == $3.boolVal;
-																else 
-																	yyerror("'==' arg type error.");	
+																else
+																	yyerror("'==' arg type error.");
 															}
-			|	expression OP_NOT_EQUAL expression			{ 
-																Trace("Reducing to boolExpr Form expression OP_NOT_EQUAL expression\n"); 
+			|	expression OP_NOT_EQUAL expression			{
+																Trace("Reducing to boolExpr Form expression OP_NOT_EQUAL expression\n");
 																$$.tokenType = T_BOOL;
 																if ($1.notInit)
 																	yyerror("'!=' left arg is not initial.");
@@ -587,11 +729,11 @@ boolExpr:		KW_TRUE										{
 																	$$.boolVal = $1.stringVal != $3.stringVal;
 																else if ($1.tokenType == T_BOOL && $3.tokenType == T_BOOL)
 																	$$.boolVal = $1.boolVal != $3.boolVal;
-																else 
-																	yyerror("'!=' arg type error.");	
+																else
+																	yyerror("'!=' arg type error.");
 															}
-			|	expression OP_GREAT_EQUAL expression		{ 
-																Trace("Reducing to boolExpr Form expression OP_GREAT_EQUAL expression\n"); 
+			|	expression OP_GREAT_EQUAL expression		{
+																Trace("Reducing to boolExpr Form expression OP_GREAT_EQUAL expression\n");
 																$$.tokenType = T_BOOL;
 																if ($1.notInit)
 																	yyerror("'>=' left arg is not initial.");
@@ -604,10 +746,10 @@ boolExpr:		KW_TRUE										{
 																	$$.boolVal = $1.floatVal >= $3.floatVal;
 																else if ($1.tokenType == T_STRING && $3.tokenType == T_STRING)
 																	$$.boolVal = $1.stringVal >= $3.stringVal;
-																else 
+																else
 																	yyerror("'>=' arg type error.");
 															}
-			|	expression OP_LESS_EQUAL expression			{ 
+			|	expression OP_LESS_EQUAL expression			{
 																Trace("Reducing to boolExpr Form expression OP_LESS_EQUAL expression\n");
 																$$.tokenType = T_BOOL;
 																if ($1.notInit)
@@ -621,15 +763,15 @@ boolExpr:		KW_TRUE										{
 																	$$.boolVal = $1.floatVal <= $3.floatVal;
 																else if ($1.tokenType == T_STRING && $3.tokenType == T_STRING)
 																	$$.boolVal = $1.stringVal <= $3.stringVal;
-																else 
-																	yyerror("'<=' arg type error."); 
+																else
+																	yyerror("'<=' arg type error.");
 															}
 			;
 
 stringExpr:		STRING						{ Trace("Reducing to stringExpr Form STRING\n"); }
 			;
 
-functionInvoc:	ID '(' parameters ')'		{ 
+functionInvoc:	ID '(' parameters ')'		{
 												Trace("Reducing to functionInvoc Form ID '(' parameters ')'\n");
 												variableEntry ve = symTabs.lookup($1.stringVal);
 												if (ve.type == T_404)
@@ -647,7 +789,7 @@ block:			'{' 						{
 												Trace("Reducing to block Form '{' statements '}'\n");
 												symTabs.push_table("this");
 											}
-				scopeContent '}'			{ 
+				scopeContent '}'			{
 												Trace("Reducing to block Form '{' statements '}'\n");
 												symTabs.pop_table();
 											}

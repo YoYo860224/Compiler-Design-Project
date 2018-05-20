@@ -1,6 +1,6 @@
 // variables
-let mut c;
-let mut a = true && false || true;
+let mut c = 1 + 4 + (51 % 5 * 9);
+let mut a = (true && false) == false;
 
     
 // function declaration
