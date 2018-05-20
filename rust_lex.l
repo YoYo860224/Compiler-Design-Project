@@ -6,7 +6,7 @@
 
 #define LIST    				strcat(buf, yytext)
 
-// #define LEX_PRINT
+#define LEX_PRINT
 
 #ifdef LEX_PRINT
 #define token(t)    			{ 														\
@@ -63,8 +63,8 @@ char stringTemp[MAX_LINE_LENG];
 
 %}
 
-alphabet		[a-zA-Z]
-alphabets		[a-zA-Z]+
+alphabet		[_a-zA-Z]
+alphabets		[_a-zA-Z]+
 
 dig				[0-9]
 digs			[0-9]+

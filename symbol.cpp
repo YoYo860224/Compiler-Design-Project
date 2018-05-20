@@ -1,6 +1,7 @@
 #include "symbol.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <vector>
 
 
@@ -14,7 +15,11 @@ variableEntry ve_fn(std::string name, int type){
 	ve.isFn = true;
 	ve.arrSize = 1;
 	ve.data.intVal = 0;
-
+	if (type == T_STRING)
+	{	
+		ve.data.stringVal = new char[1];
+		ve.data.stringVal[0] = '0';
+	}
 	return ve;
 }
 
@@ -29,7 +34,11 @@ variableEntry ve_basic(std::string name, int type, bool isConst){
 	ve.isFn = false;
 	ve.arrSize = 1;
 	ve.data.intVal = 0;
-	
+	if (type == T_STRING)
+	{	
+		ve.data.stringVal = new char[1];
+		ve.data.stringVal[0] = '0';
+	}
 	return ve;
 }
 
@@ -44,7 +53,11 @@ variableEntry ve_basic_notInit(std::string name, int type, bool isConst){
 	ve.isFn = false;
 	ve.arrSize = 1;
 	ve.data.intVal = 0;
-
+	if (type == T_STRING)
+	{	
+		ve.data.stringVal = new char[1];
+		ve.data.stringVal[0] = '0';
+	}
 	return ve;
 }
 
@@ -58,7 +71,11 @@ variableEntry ve_arr(std::string name, int type, bool isConst, int arrSize){
 	ve.isFn = false;
 	ve.arrSize = arrSize;
 	ve.data.intVal = 0;
-
+	if (type == T_STRING)
+	{	
+		ve.data.stringVal = new char[1];
+		ve.data.stringVal[0] = '0';
+	}
 	return ve;
 }
 
@@ -181,8 +198,8 @@ int symbolTables::show_topTable()
 					if (ve.isArr)
 					{
 						std::cout << ve.name << '[' << j << ']' << '\t';
-						if (ve.isInit)
-							std::cout << ve.data.stringArr[j] << '\n';
+						if (ve.isInit);
+							//std::cout << ve.data.stringArr[j] << '\n';
 						else
 							std::cout << "?" << '\n';
 					}
@@ -234,6 +251,10 @@ int symbolTables::editVariable(variableEntry var)
 int symbolTables::forPreloadFN(int type)
 {
 	tables[tables.size()-2].variableEntries.back().type = type;
+	if (type == T_STRING)
+	{	tables[tables.size()-2].variableEntries.back().data.stringVal = new char[1];
+		tables[tables.size()-2].variableEntries.back().data.stringVal[0] = '0';
+	}
 }
 
 variableEntry symbolTables::lookup(std::string name)

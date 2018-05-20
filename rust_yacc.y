@@ -6,9 +6,9 @@
 #include <stdio.h>
 #include "symbol.h"
 
-// #define YACC_PRINT
+#define YACC_PRINT
 
-#ifdef USEPRINT
+#ifdef YACC_PRINT
 #define Trace(t)		printf(t)
 #else
 #define Trace(t)
