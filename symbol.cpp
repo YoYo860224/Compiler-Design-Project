@@ -16,17 +16,6 @@ variableEntry ve_basic(std::string name, int type, bool isConst){
 	return ve;
 }
 
-variableEntry ve_arr(std::string name, int type, bool isConst, int arrSize){
-	variableEntry ve;
-	ve.name = name;
-	ve.type = type;
-	ve.isInit = true;
-	ve.isConst = isConst;
-	ve.isArr = true;
-	ve.arrSize = arrSize;
-
-	return ve;
-}
 
 variableEntry ve_basic_notInit(std::string name, int type, bool isConst){
 	variableEntry ve;
@@ -40,11 +29,11 @@ variableEntry ve_basic_notInit(std::string name, int type, bool isConst){
 	return ve;
 }
 
-variableEntry ve_arr_notInit(std::string name, int type, bool isConst, int arrSize){
+variableEntry ve_arr(std::string name, int type, bool isConst, int arrSize){
 	variableEntry ve;
 	ve.name = name;
 	ve.type = type;
-	ve.isInit = false;
+	ve.isInit = true;
 	ve.isConst = isConst;
 	ve.isArr = true;
 	ve.arrSize = arrSize;
@@ -126,7 +115,6 @@ int symbolTables::show_topTable()
 							std::cout << "?" << '\n';
 					}
 					break;
-
 				case T_FLOAT:
 					std::cout << "float" << '\t';
 					if (ve.isArr)

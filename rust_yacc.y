@@ -200,7 +200,7 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 constDec:		KW_LET ID '=' expression ';'			{
 															Trace("Reducing to constDec Form KW_LET ID '=' expression ';'\n");
 
-															variableEntry ve = ve_basic_notInit( $2.stringVal, $4.tokenType, true);
+															variableEntry ve = ve_basic( $2.stringVal, $4.tokenType, true);
 
 															if ($4.tokenType == T_INT)
 																ve.data.intVal = $4.intVal;
@@ -217,7 +217,7 @@ constDec:		KW_LET ID '=' expression ';'			{
 			|	KW_LET ID ':' type '=' expression ';'	{
 															Trace("Reducing to constDec Form KW_LET ID ':' type '=' expression ';'\n");
 
-															variableEntry ve = ve_basic_notInit( $2.stringVal, $4.tokenType, true);
+															variableEntry ve = ve_basic( $2.stringVal, $4.tokenType, true);
 
 															if ($4.tokenType == T_FLOAT && $6.tokenType == T_INT)
 																ve.data.floatVal = $6.intVal;
@@ -241,8 +241,25 @@ constDec:		KW_LET ID '=' expression ';'			{
 arrDec:			KW_LET KW_MUT ID '[' type ',' integerExpr ']' ';'	{
 																		Trace("Reducing to arrDec Form KW_LET KW_MUT ID '[' type ',' integerExpr ']' ';'\n");
 
-																		variableEntry ve = ve_arr_notInit( $3.stringVal, $5.tokenType, false, $7.intVal);
+																		variableEntry ve = ve_arr( $3.stringVal, $5.tokenType, false, $7.intVal);
+																		int size = $7.intVal;
 
+																		if ($5.tokenType == T_INT)
+																			ve.data.intArr = new int[size];
+																		else if ($5.tokenType == T_FLOAT)
+																			ve.data.floatArr = new float[size];
+																		else if ($5.tokenType == T_BOOL)
+																			ve.data.boolArr = new bool[size];
+																		else if ($5.tokenType == T_STRING)
+																		{
+																			ve.data.stringArr = new char*[size];
+																			for (int i = 0; i < size; i++)
+																			{
+																				ve.data.stringArr[i] = new char[0];
+																				//ve.data.stringArr[i][0] = '0';
+																			}
+																		}	
+																			
 																		if (!symTabs.addVariable(ve))
 																			yyerror("Error: Re declaration.");
 																	}

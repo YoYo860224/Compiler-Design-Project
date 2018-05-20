@@ -102,7 +102,7 @@ ID				{alphabet}({alphabet}|{dig})*
 
 <IN_STRING>\"   {
 					yylval.Token.tokenType = T_STRING;
-					yylval.Token.stringVal = strdup(yytext);
+					yylval.Token.stringVal = strdup(stringTemp);
 					tokenString(stringTemp);
 				}
 
