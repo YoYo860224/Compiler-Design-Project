@@ -4,8 +4,55 @@
 #include <vector>
 
 
+variableEntry ve_basic(std::string name, int type, bool isConst){
+	variableEntry ve;
+	ve.name = name;
+	ve.type = type;
+	ve.isInit = true;
+	ve.isConst = isConst;
+	ve.isArr = false;
+	ve.arrSize = 1;
 
-symbolTables::symbolTables(/* args */)
+	return ve;
+}
+
+variableEntry ve_Arr(std::string name, int type, bool isConst, int arrSize){
+	variableEntry ve;
+	ve.name = name;
+	ve.type = type;
+	ve.isInit = true;
+	ve.isConst = isConst;
+	ve.isArr = true;
+	ve.arrSize = arrSize;
+
+	return ve;
+}
+
+variableEntry ve_basic_notInit(std::string name, int type, bool isConst){
+	variableEntry ve;
+	ve.name = name;
+	ve.type = type;
+	ve.isInit = false;
+	ve.isConst = isConst;
+	ve.isArr = false;
+	ve.arrSize = 1;
+
+	return ve;
+}
+
+variableEntry ve_Arr_notInit(std::string name, int type, bool isConst, int arrSize){
+	variableEntry ve;
+	ve.name = name;
+	ve.type = type;
+	ve.isInit = false;
+	ve.isConst = isConst;
+	ve.isArr = true;
+	ve.arrSize = arrSize;
+
+	return ve;
+}
+
+symbolTables::symbolTables()
 {
 	symbolTable st;
 	st.scopeName = "GOLOBAL";
@@ -21,10 +68,131 @@ int symbolTables::push_table(std::string name)
 	tables.push_back(st);
 }
 
+int symbolTables::update_tableName(std::string name)
+{
+	tables.back().scopeName = name;
+}
+
 int symbolTables::pop_table()
 {
-	show();
+	show_topTable();
 	tables.pop_back();
+}
+
+int symbolTables::show_topTable()
+{
+	std::cout << "==============================================" << "\n";
+	std::cout << "In \'" << tables.back().scopeName << "\' scope" << '\n';
+	std::cout << "----------------------------------------------" << "\n";
+
+	for (int i = 0; i < tables.back().variableEntries.size(); i++)
+	{
+		variableEntry ve = tables.back().variableEntries[i];
+		for(int j = 0; j < ve.arrSize; j++)
+		{
+			if (j != 0)
+				std::cout << "--------" << '\t';
+			else
+				if (ve.isConst)
+					std::cout << "Constant" << '\t';
+				else
+					std::cout << "Variable" << '\t';
+					
+			switch (ve.type)
+			{
+				case T_NONE:
+					std::cout << "none" << '\t';
+
+					std::cout << ve.name << '\t';
+					std::cout << "?" << '\n';
+					break;
+
+				case T_INT:
+					std::cout << "int" << '\t';
+					if (ve.isArr)
+					{
+						std::cout << ve.name << '[' << j << ']' << '\t';
+						if (ve.isInit)
+							std::cout << ve.data.intArr[j] << '\n';
+						else
+							std::cout << "?" << '\n';
+					}
+					else
+					{
+						std::cout << ve.name << '\t';
+						if (ve.isInit)
+							std::cout << ve.data.intVal << '\n';
+						else
+							std::cout << "?" << '\n';
+					}
+					break;
+
+				case T_FLOAT:
+					std::cout << "float" << '\t';
+					if (ve.isArr)
+					{
+						std::cout << ve.name << '[' << j << ']' << '\t';
+						if (ve.isInit)
+							std::cout << ve.data.floatArr[j] << '\n';
+						else
+							std::cout << "?" << '\n';
+					}
+					else
+					{
+						std::cout << ve.name << '\t';
+						if (ve.isInit)
+							std::cout << ve.data.floatVal << '\n';
+						else
+							std::cout << "?" << '\n';
+					}
+					break;
+
+				case T_BOOL:
+					std::cout << "bool" << '\t';
+					if (ve.isArr)
+					{
+						std::cout << ve.name << '[' << j << ']' << '\t';
+						if (ve.isInit)
+							std::cout << ve.data.boolArr[j] << '\n';
+						else
+							std::cout << "?" << '\n';
+					}
+					else
+					{
+						std::cout << ve.name << '\t';
+						if (ve.isInit)
+							std::cout << ve.data.boolVal << '\n';
+						else
+							std::cout << "?" << '\n';
+					}
+					break;
+
+				case T_STRING:
+					std::cout << "string" << '\t';
+					if (ve.isArr)
+					{
+						std::cout << ve.name << '[' << j << ']' << '\t';
+						if (ve.isInit)
+							std::cout << ve.data.stringArr[j] << '\n';
+						else
+							std::cout << "?" << '\n';
+					}
+					else
+					{
+						std::cout << ve.name << '\t';
+						if (ve.isInit)
+							std::cout << ve.data.stringVal << '\n';
+						else
+							std::cout << "?" << '\n';
+					}
+					break;
+
+				default:
+					break;
+			}
+		}
+	}
+	std::cout << "==============================================" << "\n";
 }
 
 int symbolTables::addVariable(variableEntry var)
@@ -70,92 +238,3 @@ variableEntry symbolTables::lookup(std::string name)
 	return notFound;
 }
 
-void symbolTables::show()
-{
-	std::cout << "==============================================" << "\n";
-	std::cout << "In \'" << tables.back().scopeName << "\' scope" << '\n';
-	std::cout << "----------------------------------------------" << "\n";
-
-	for (int i = 0; i < tables.back().variableEntries.size(); i++)
-	{
-		variableEntry ve = tables.back().variableEntries[i];
-		for(int j = 0; j < ve.arrSize; j++)
-		{
-			if (j != 0)
-				std::cout << "--------" << '\t';
-			if (ve.isConst)
-				std::cout << "Constant" << '\t';
-			else
-				std::cout << "Variable" << '\t';
-			switch (ve.type)
-			{
-				case T_NONE:
-					std::cout << "none" << '\t';
-
-					std::cout << ve.name << '\t';
-					std::cout << "?" << '\n';
-					break;
-
-				case T_INT:
-					std::cout << "int" << '\t';
-					if (ve.isArr)
-					{
-						std::cout << ve.name << '[' << j << ']' << '\t';
-						std::cout << ve.data.intArr[j] << '\n';
-					}
-					else
-					{
-						std::cout << ve.name << '\t';
-						std::cout << ve.data.intVal << '\n';
-					}
-					break;
-
-				case T_FLOAT:
-					std::cout << "float" << '\t';
-					if (ve.isArr)
-					{
-						std::cout << ve.name << '[' << j << ']' << '\t';
-						std::cout << ve.data.floatArr[j] << '\n';
-					}
-					else
-					{
-						std::cout << ve.name << '\t';
-						std::cout << ve.data.floatVal << '\n';
-					}
-					break;
-
-				case T_BOOL:
-					std::cout << "bool" << '\t';
-					if (ve.isArr)
-					{
-						std::cout << ve.name << '[' << j << ']' << '\t';
-						std::cout << ve.data.boolArr[j] << '\n';
-					}
-					else
-					{
-						std::cout << ve.name << '\t';
-						std::cout << ve.data.boolVal << '\n';
-					}
-					break;
-
-				case T_STRING:
-					std::cout << "string" << '\t';
-					if (ve.isArr)
-					{
-						std::cout << ve.name << '[' << j << ']' << '\t';
-						std::cout << ve.data.stringArr[j] << '\n';
-					}
-					else
-					{
-						std::cout << ve.name << '\t';
-						std::cout << ve.data.stringVal << '\n';
-					}
-					break;
-
-				default:
-					break;
-			}
-		}
-	}
-	std::cout << "==============================================" << "\n";
-}

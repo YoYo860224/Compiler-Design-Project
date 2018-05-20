@@ -6,7 +6,13 @@
 #include <stdio.h>
 #include "symbol.h"
 
-#define Trace(t)        printf(t)
+// #define YACC_PRINT
+
+#ifdef USEPRINT
+#define Trace(t)		printf(t)
+#else
+#define Trace(t)
+#endif
 
 extern "C" {
 	int yyerror(const char *s);
@@ -80,7 +86,7 @@ symbolTables symTabs = symbolTables();
 %token <Token> REAL
 %token <Token> ID
 
-%type <Token> expression type
+%type <Token> expression type integerExpr arrDec
 
 
 %start program
@@ -137,22 +143,16 @@ type:			KW_INT					{
 
 varDec:			KW_LET KW_MUT ID ':' type ';'					{
 																	Trace("Reducing to varDec Form KW_LET KW_MUT ID ':' type ';'\n");
-																	variableEntry ve;
-																	ve.name = $3.stringVal;
-																	ve.type = $5.tokenType;
-																	ve.isConst = false;
-																	ve.isArr = false;
-																	ve.arrSize = 1;
+
+																	variableEntry ve = ve_basic_notInit($3.stringVal, $5.tokenType, false);
+
+																	if (!symTabs.addVariable(ve))
+																		yyerror("Error: Re declaration.");
 																}
 			|	KW_LET KW_MUT ID '=' expression	';'				{
 																	Trace("Reducing to varDec Form KW_LET KW_MUT ID '=' expression	';'\n");
 
-																	variableEntry ve;
-																	ve.name = $3.stringVal;
-																	ve.type = $5.tokenType;
-																	ve.isConst = false;
-																	ve.isArr = false;
-																	ve.arrSize = 1;
+																	variableEntry ve = ve_basic($3.stringVal, $5.tokenType, false);
 
 																	if ($5.tokenType == T_INT)
 																		ve.data.intVal = $5.intVal;
@@ -168,12 +168,8 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 																}
 			|	KW_LET KW_MUT ID ':' type '=' expression ';'	{
 																	Trace("Reducing to varDec Form KW_LET KW_MUT ID ':' type '=' expression ';'\n");
-																	variableEntry ve;
-																	ve.name = $3.stringVal;
-																	ve.type = $5.tokenType;
-																	ve.isConst = false;
-																	ve.isArr = false;
-																	ve.arrSize = 1;
+
+																	variableEntry ve = ve_basic($3.stringVal, $5.tokenType, false);
 
 																	if ($5.tokenType == T_FLOAT && $7.tokenType == T_INT)
 																		ve.data.floatVal = $7.intVal;
@@ -193,12 +189,8 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 																}
 			|	KW_LET KW_MUT ID ';'							{
 																	Trace("Reducing to varDec Form KW_LET KW_MUT ID ';'\n");
-																		variableEntry ve;
-																	ve.name = $3.stringVal;
-																	ve.type = T_NONE;
-																	ve.isConst = false;
-																	ve.isArr = false;
-																	ve.arrSize = 1;
+
+																	variableEntry ve = ve_basic_notInit($3.stringVal, T_NONE, false);
 
 																	if (!symTabs.addVariable(ve))
 																		yyerror("Error: Re declaration.");
@@ -208,12 +200,7 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 constDec:		KW_LET ID '=' expression ';'			{
 															Trace("Reducing to constDec Form KW_LET ID '=' expression ';'\n");
 
-															variableEntry ve;
-															ve.name = $2.stringVal;
-															ve.type = $4.tokenType;
-															ve.isConst = true;
-															ve.isArr = false;
-															ve.arrSize = 1;
+															variableEntry ve = ve_basic_notInit( $2.stringVal, $4.tokenType, true);
 
 															if ($4.tokenType == T_INT)
 																ve.data.intVal = $4.intVal;
@@ -230,12 +217,7 @@ constDec:		KW_LET ID '=' expression ';'			{
 			|	KW_LET ID ':' type '=' expression ';'	{
 															Trace("Reducing to constDec Form KW_LET ID ':' type '=' expression ';'\n");
 
-															variableEntry ve;
-															ve.name = $2.stringVal;
-															ve.type = $4.tokenType;
-															ve.isConst = true;
-															ve.isArr = false;
-															ve.arrSize = 1;
+															variableEntry ve = ve_basic_notInit( $2.stringVal, $4.tokenType, true);
 
 															if ($4.tokenType == T_FLOAT && $6.tokenType == T_INT)
 																ve.data.floatVal = $6.intVal;
@@ -256,31 +238,49 @@ constDec:		KW_LET ID '=' expression ';'			{
 														}
 			;
 
-arrDec:			KW_LET KW_MUT ID '[' type ',' integerExpr ']' ';'	{ Trace("Reducing to arrDec Form KW_LET KW_MUT ID '[' type ',' integerExpr ']' ';'\n"); }
+arrDec:			KW_LET KW_MUT ID '[' type ',' integerExpr ']' ';'	{ 
+																		Trace("Reducing to arrDec Form KW_LET KW_MUT ID '[' type ',' integerExpr ']' ';'\n"); 
+
+																		variableEntry ve = ve_Arr_notInit( $3.stringVal, $5.tokenType, false, $7.intVal);
+
+																		if (!symTabs.addVariable(ve))
+																			yyerror("Error: Re declaration.");
+																	}
 			;
 
 functionDecs:	functionDec								{ Trace("Reducing to functionDecs Form functionDec\n"); }
 			|	functionDec functionDecs				{ Trace("Reducing to functionDecs Form functionDec functionDecs\n"); }
 			;
 
-functionDec:	KW_FN ID '('  ')' scope								{ Trace("Reducing to functionDec Form KW_FN ID '('  ')' scope\n"); }
-			|	KW_FN ID '(' formalArgs ')' scope					{ Trace("Reducing to functionDec Form KW_FN ID '(' formalArgs ')' scope\n"); }
-			|	KW_FN ID '('  ')' '-' '>' type	scope				{ Trace("Reducing to functionDec Form KW_FN ID '('  ')' '-' '>' type	scope\n"); }
-			|	KW_FN ID '(' formalArgs ')' '-' '>' type scope		{ Trace("Reducing to functionDec Form KW_FN ID '(' formalArgs ')' '-' '>' type scope\n"); }
+functionDec:	KW_FN ID '(' ')' 									{ symTabs.push_table($2.stringVal); }
+				fnScope												{ 
+																		Trace("Reducing to functionDec Form KW_FN ID '('  ')' fnScope\n");
+																		symTabs.pop_table();
+																	}
+			|	KW_FN ID '('										{ symTabs.push_table($2.stringVal); }											
+			 	formalArgs ')' fnScope								{ 
+																		Trace("Reducing to functionDec Form KW_FN ID '(' formalArgs ')' fnScope\n"); 
+																		symTabs.pop_table();
+																	}
 			;
 
-formalArgs:		ID ':' type					{ Trace("Reducing to formalArgs Form ID ':' type\n"); }
+formalArgs:		ID ':' type					{ 
+												Trace("Reducing to formalArgs Form ID ':' type\n");
+
+											}
 			|	ID ':' type ',' formalArgs	{ Trace("Reducing to formalArgs Form ID ':' type ',' formalArgs\n"); }
 			;
 
-scope:			'{' '}'						{ Trace("Reducing to scope Form '{' '}'\n"); }
-			|	'{' scopeContent '}'		{ Trace("Reducing to scope Form '{' scopeContent '}'\n"); }
+fnScope:		'{' '}'								{ Trace("Reducing to fnScope Form '{' '}'\n"); }
+			|	'{' fNscopeCont '}'					{ Trace("Reducing to fnScope Form '{' fNscopeCont '}'\n"); }
+			|	'-' '>' type '{' '}'				{ Trace("Reducing to fnScope Form '{' '}'\n"); }
+			|	'-' '>' type '{' fNscopeCont '}'	{ Trace("Reducing to fnScope Form '{' fNscopeCont '}'\n"); }
 			;
 
-scopeContent:	declarations scopeContent	{ Trace("Reducing to scopeContent Form declarations scopeContent\n"); }
-			|	statements scopeContent		{ Trace("Reducing to scopeContent Form statements scopeContent\n"); }
-			|	declarations				{ Trace("Reducing to scopeContent Form declarations\n"); }
-			|	statements					{ Trace("Reducing to scopeContent Form statements\n"); }
+fNscopeCont:	declarations fNscopeCont	{ Trace("Reducing to fNscopeCont Form declarations fNscopeCont\n"); }
+			|	statements fNscopeCont		{ Trace("Reducing to fNscopeCont Form statements fNscopeCont\n"); }
+			|	declarations				{ Trace("Reducing to fNscopeCont Form declarations\n"); }
+			|	statements					{ Trace("Reducing to fNscopeCont Form statements\n"); }
 			;
 
 statements:		statement statements		{ Trace("Reducing to statements Form statement statements\n"); }

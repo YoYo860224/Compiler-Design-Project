@@ -30,9 +30,10 @@ typedef union{
 	char** stringArr;
 } variableData;
 
-typedef struct{
+typedef struct variableEntry{
 	std::string name;
 	int type;
+	bool isInit;
 	bool isConst;
 	bool isArr;
 	int arrSize;
@@ -41,11 +42,15 @@ typedef struct{
 	};
 } variableEntry;
 
+variableEntry ve_basic(std::string name, int type, bool isConst);
+variableEntry ve_Arr(std::string name, int type, bool isConst, int arrSize);
+variableEntry ve_basic_notInit(std::string name, int type, bool isConst);
+variableEntry ve_Arr_notInit(std::string name, int type, bool isConst, int arrSize);
+
 typedef struct{
 	std::string scopeName;
 	std::vector<variableEntry> variableEntries;
 } symbolTable;
-
 
 class symbolTables
 {
@@ -55,13 +60,15 @@ public:
 	symbolTables();
 
 	int push_table(std::string name);
+	int update_tableName(std::string name);
 	int pop_table();
+	int show_topTable();
 
 	int addVariable(variableEntry var);
 	int editVariable(variableEntry var);
 	variableEntry lookup(std::string name);
 
-	void show();
+	
 };
 
 #endif
