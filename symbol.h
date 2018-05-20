@@ -17,7 +17,6 @@ enum TYPE
 	T_404
 };
 
-
 typedef union{
 	int intVal;
 	float floatVal;
@@ -36,12 +35,14 @@ typedef struct variableEntry{
 	bool isInit;
 	bool isConst;
 	bool isArr;
+	bool isFn;
 	int arrSize;
 	union {
 		variableData data;
 	};
 } variableEntry;
 
+variableEntry ve_fn(std::string name, int type);
 variableEntry ve_basic(std::string name, int type, bool isConst);
 variableEntry ve_basic_notInit(std::string name, int type, bool isConst);
 variableEntry ve_arr(std::string name, int type, bool isConst, int arrSize);
@@ -64,7 +65,7 @@ public:
 	int show_topTable();
 
 	int addVariable(variableEntry var);
-	int editVariable(variableEntry var);
+	int forPreloadFN(int type);
 
 	variableEntry lookup(std::string name);
 	variableEntry lookupForNowScope(std::string name);

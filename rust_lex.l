@@ -157,8 +157,8 @@ ID				{alphabet}({alphabet}|{dig})*
 "*="    { token(OP_MULTIPLICATION_ASSIGNMENT); }
 "/="    { token(OP_DIVISION_ASSIGNMENT); }
 
-"true"			{ yylval.Token.tokenType = T_BOOL; yylval.Token.boolVal = true; token(KW_TRUE); }
-"false"			{ yylval.Token.tokenType = T_BOOL; yylval.Token.boolVal = false; token(KW_FALSE); }
+"true"			{ token(KW_TRUE); }
+"false"			{ token(KW_FALSE); }
 
 "bool"			{ token(KW_BOOL); }
 "break"			{ token(KW_BREAK); }

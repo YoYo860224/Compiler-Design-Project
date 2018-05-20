@@ -4,6 +4,20 @@
 #include <vector>
 
 
+variableEntry ve_fn(std::string name, int type){
+	variableEntry ve;
+	ve.name = name;
+	ve.type = type;
+	ve.isInit = true;
+	ve.isConst = false;
+	ve.isArr = false;
+	ve.isFn = true;
+	ve.arrSize = 1;
+
+	return ve;
+}
+
+
 variableEntry ve_basic(std::string name, int type, bool isConst){
 	variableEntry ve;
 	ve.name = name;
@@ -11,6 +25,7 @@ variableEntry ve_basic(std::string name, int type, bool isConst){
 	ve.isInit = true;
 	ve.isConst = isConst;
 	ve.isArr = false;
+	ve.isFn = false;
 	ve.arrSize = 1;
 
 	return ve;
@@ -24,6 +39,7 @@ variableEntry ve_basic_notInit(std::string name, int type, bool isConst){
 	ve.isInit = false;
 	ve.isConst = isConst;
 	ve.isArr = false;
+	ve.isFn = false;
 	ve.arrSize = 1;
 
 	return ve;
@@ -36,6 +52,7 @@ variableEntry ve_arr(std::string name, int type, bool isConst, int arrSize){
 	ve.isInit = true;
 	ve.isConst = isConst;
 	ve.isArr = true;
+	ve.isFn = false;
 	ve.arrSize = arrSize;
 
 	return ve;
@@ -82,10 +99,13 @@ int symbolTables::show_topTable()
 			if (j != 0)
 				std::cout << "--------" << '\t';
 			else
-				if (ve.isConst)
-					std::cout << "Constant" << '\t';
+				if (ve.isFn)
+					std::cout << "Function" << '\t';
 				else
-					std::cout << "Variable" << '\t';
+					if (ve.isConst)
+						std::cout << "Constant" << '\t';
+					else
+						std::cout << "Variable" << '\t';
 
 			switch (ve.type)
 			{
@@ -101,10 +121,7 @@ int symbolTables::show_topTable()
 					if (ve.isArr)
 					{
 						std::cout << ve.name << '[' << j << ']' << '\t';
-						if (ve.isInit)
-							std::cout << ve.data.intArr[j] << '\n';
-						else
-							std::cout << "?" << '\n';
+						std::cout << ve.data.intArr[j] << '\n';
 					}
 					else
 					{
@@ -141,7 +158,7 @@ int symbolTables::show_topTable()
 					{
 						std::cout << ve.name << '[' << j << ']' << '\t';
 						if (ve.isInit)
-							std::cout << ve.data.boolArr[j] << '\n';
+							std::cout << std::boolalpha << ve.data.boolArr[j] << '\n';
 						else
 							std::cout << "?" << '\n';
 					}
@@ -149,7 +166,7 @@ int symbolTables::show_topTable()
 					{
 						std::cout << ve.name << '\t';
 						if (ve.isInit)
-							std::cout << ve.data.boolVal << '\n';
+							std::cout << std::boolalpha << ve.data.boolVal << '\n';
 						else
 							std::cout << "?" << '\n';
 					}
@@ -193,21 +210,9 @@ int symbolTables::addVariable(variableEntry var)
 	return 1;
 }
 
-int symbolTables::editVariable(variableEntry var)
+int symbolTables::forPreloadFN(int type)
 {
-	for (int i = tables.size(); i >= 0; i--)
-	{
-		for (int j = 0; j < tables.size(); j++)
-		{
-			variableEntry ve = tables[j].variableEntries[i];
-			if (ve.name == var.name)
-			{
-				if (!ve.isConst)
-					tables[j].variableEntries[i] = var;
-			}
-		}
-	}
-	return 0;
+	tables[tables.size()-2].variableEntries.back().type = type;
 }
 
 variableEntry symbolTables::lookup(std::string name)

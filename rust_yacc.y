@@ -27,6 +27,7 @@ symbolTables symTabs = symbolTables();
 %union{
 	struct{
 		int tokenType; // 0:int 1:float 2:bool 3:string
+		bool notInit;
 		union{
 			int intVal;
 			float floatVal;
@@ -86,7 +87,7 @@ symbolTables symTabs = symbolTables();
 %token <Token> REAL
 %token <Token> ID
 
-%type <Token> expression type integerExpr arrDec
+%type <Token> expression type integerExpr arrDec realExpr boolExpr stringExpr
 
 
 %start program
@@ -114,9 +115,9 @@ declarations:	declaration					{ Trace("Reducing to declarations Form declaration
 			|	declaration declarations	{ Trace("Reducing to declarations Form declaration declarations\n"); }
 			;
 
-declaration:	varDec					{ Trace("Reducing to declaration Form varDec\n"); }
-			|	constDec				{ Trace("Reducing to declaration Form constDec\n"); }
-			|	arrDec					{ Trace("Reducing to declaration Form arrDec\n"); }
+declaration:	varDec						{ Trace("Reducing to declaration Form varDec\n"); }
+			|	constDec					{ Trace("Reducing to declaration Form constDec\n"); }
+			|	arrDec						{ Trace("Reducing to declaration Form arrDec\n"); }
 			;
 
 type:			KW_INT					{
@@ -147,7 +148,7 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 																	variableEntry ve = ve_basic_notInit($3.stringVal, $5.tokenType, false);
 
 																	if (!symTabs.addVariable(ve))
-																		yyerror("Error: Re declaration.");
+																		yyerror("Re declaration.");
 																}
 			|	KW_LET KW_MUT ID '=' expression	';'				{
 																	Trace("Reducing to varDec Form KW_LET KW_MUT ID '=' expression	';'\n");
@@ -164,7 +165,7 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 																		ve.data.stringVal = $5.stringVal;
 
 																	if (!symTabs.addVariable(ve))
-																		yyerror("Error: Re declaration.");
+																		yyerror("Re declaration.");
 																}
 			|	KW_LET KW_MUT ID ':' type '=' expression ';'	{
 																	Trace("Reducing to varDec Form KW_LET KW_MUT ID ':' type '=' expression ';'\n");
@@ -185,7 +186,7 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 																		ve.data.stringVal = $7.stringVal;
 
 																	if (!symTabs.addVariable(ve))
-																		yyerror("Error: Re declaration.");
+																		yyerror("Re declaration.");
 																}
 			|	KW_LET KW_MUT ID ';'							{
 																	Trace("Reducing to varDec Form KW_LET KW_MUT ID ';'\n");
@@ -193,14 +194,14 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 																	variableEntry ve = ve_basic_notInit($3.stringVal, T_NONE, false);
 
 																	if (!symTabs.addVariable(ve))
-																		yyerror("Error: Re declaration.");
+																		yyerror("Re declaration.");
 																}
 			;
 
 constDec:		KW_LET ID '=' expression ';'			{
 															Trace("Reducing to constDec Form KW_LET ID '=' expression ';'\n");
 
-															variableEntry ve = ve_basic( $2.stringVal, $4.tokenType, true);
+															variableEntry ve = ve_basic($2.stringVal, $4.tokenType, true);
 
 															if ($4.tokenType == T_INT)
 																ve.data.intVal = $4.intVal;
@@ -212,12 +213,12 @@ constDec:		KW_LET ID '=' expression ';'			{
 																ve.data.stringVal = $4.stringVal;
 
 															if (!symTabs.addVariable(ve))
-																yyerror("Error: Re declaration.");
+																yyerror("Re declaration.");
 														}
 			|	KW_LET ID ':' type '=' expression ';'	{
 															Trace("Reducing to constDec Form KW_LET ID ':' type '=' expression ';'\n");
 
-															variableEntry ve = ve_basic( $2.stringVal, $4.tokenType, true);
+															variableEntry ve = ve_basic($2.stringVal, $4.tokenType, true);
 
 															if ($4.tokenType == T_FLOAT && $6.tokenType == T_INT)
 																ve.data.floatVal = $6.intVal;
@@ -234,14 +235,18 @@ constDec:		KW_LET ID '=' expression ';'			{
 
 
 															if (!symTabs.addVariable(ve))
-																yyerror("Error: Re declaration.");
+																yyerror("Re declaration.");
 														}
 			;
 
-arrDec:			KW_LET KW_MUT ID '[' type ',' integerExpr ']' ';'	{
-																		Trace("Reducing to arrDec Form KW_LET KW_MUT ID '[' type ',' integerExpr ']' ';'\n");
+arrDec:			KW_LET KW_MUT ID '[' type ',' expression ']' ';'	{
+																		Trace("Reducing to arrDec Form KW_LET KW_MUT ID '[' type ',' expression ']' ';'\n");
 
 																		variableEntry ve = ve_arr( $3.stringVal, $5.tokenType, false, $7.intVal);
+
+																		if ($7.tokenType != T_INT)
+																			yyerror("Array index not integer");
+
 																		int size = $7.intVal;
 
 																		if ($5.tokenType == T_INT)
@@ -261,7 +266,7 @@ arrDec:			KW_LET KW_MUT ID '[' type ',' integerExpr ']' ';'	{
 																		}	
 																			
 																		if (!symTabs.addVariable(ve))
-																			yyerror("Error: Re declaration.");
+																			yyerror("Re declaration.");
 																	}
 			;
 
@@ -269,46 +274,53 @@ functionDecs:	functionDec								{ Trace("Reducing to functionDecs Form function
 			|	functionDec functionDecs				{ Trace("Reducing to functionDecs Form functionDec functionDecs\n"); }
 			;
 
-functionDec:	KW_FN ID '(' ')' 									{ symTabs.push_table($2.stringVal); }
-				fnScope												{
-																		Trace("Reducing to functionDec Form KW_FN ID '('  ')' fnScope\n");
-																		symTabs.pop_table();
-																	}
-			|	KW_FN ID '('										{ symTabs.push_table($2.stringVal); }
-			 	formalArgs ')' fnScope								{
-																		Trace("Reducing to functionDec Form KW_FN ID '(' formalArgs ')' fnScope\n");
-																		symTabs.pop_table();
-																	}
-			;
+functionDec:	KW_FN ID '('			{
+											Trace("Reducing to functionDec Form KW_FN ID '('\n");
+											variableEntry ve = ve_fn($2.stringVal, T_NONE);
+											if (!symTabs.addVariable(ve))
+												yyerror("Re declaration.");
+											symTabs.push_table($2.stringVal);
+										}
+			 	formalArgs ')' fnType 	{ Trace("Reducing to functionDec Form formalArgs ')' fnType\n"); }
+				fnScope					{ 
+											Trace("Reducing to functionDec Form fnScope\n");
+											symTabs.pop_table();
+										}
+				;
 
-formalArgs:		ID ':' type					{
-												Trace("Reducing to formalArgs Form ID ':' type\n");
+formalArgs:		ID ':' type 				{
+												Trace("Reducing to formalArgs Form ID ':' type ',' formalArgs\n");
 
-												variableEntry ve = ve_basic_notInit( $1.stringVal, $3.tokenType, false);
+												variableEntry ve = ve_basic($1.stringVal, $3.tokenType, false);
 
 												if (!symTabs.addVariable(ve))
-													yyerror("Error: Re declaration.");
+													yyerror("Re declaration.");
 											}
 			|	ID ':' type ',' formalArgs	{
 												Trace("Reducing to formalArgs Form ID ':' type ',' formalArgs\n");
 
-												variableEntry ve = ve_basic_notInit( $1.stringVal, $3.tokenType, false);
+												variableEntry ve = ve_basic($1.stringVal, $3.tokenType, false);
 
 												if (!symTabs.addVariable(ve))
-													yyerror("Error: Re declaration.");
+													yyerror("Re declaration.");
 											}
+			|	%empty						{ Trace("Reducing to formalArgs Form empty ':' type\n"); }
 			;
 
-fnScope:		'{' '}'								{ Trace("Reducing to fnScope Form '{' '}'\n"); }
-			|	'{' fNscopeCont '}'					{ Trace("Reducing to fnScope Form '{' fNscopeCont '}'\n"); }
-			|	'-' '>' type '{' '}'				{ Trace("Reducing to fnScope Form '{' '}'\n"); }
-			|	'-' '>' type '{' fNscopeCont '}'	{ Trace("Reducing to fnScope Form '{' fNscopeCont '}'\n"); }
+fnType:			'-' '>' type				{ 
+												Trace("Reducing to fnScope Form '{' '}'\n");
+												symTabs.forPreloadFN($3.tokenType);
+											}					
+			|	%empty						{ Trace("Reducing to fnType Form empty\n"); }
+
+fnScope:		'{' scopeContent '}'		{ Trace("Reducing to fnScope Form '{' scopeContent '}'\n"); }
 			;
 
-fNscopeCont:	declarations fNscopeCont	{ Trace("Reducing to fNscopeCont Form declarations fNscopeCont\n"); }
-			|	statements fNscopeCont		{ Trace("Reducing to fNscopeCont Form statements fNscopeCont\n"); }
-			|	declarations				{ Trace("Reducing to fNscopeCont Form declarations\n"); }
-			|	statements					{ Trace("Reducing to fNscopeCont Form statements\n"); }
+scopeContent:	declarations scopeContent	{ Trace("Reducing to scopeContent Form declarations scopeContent\n"); }
+			|	statements scopeContent		{ Trace("Reducing to scopeContent Form statements scopeContent\n"); }
+			|	declarations				{ Trace("Reducing to scopeContent Form declarations\n"); }
+			|	statements					{ Trace("Reducing to scopeContent Form statements\n"); }
+			|	%empty						{ Trace("Reducing to scopeContent Form empty\n"); }
 			;
 
 statements:		statement statements		{ Trace("Reducing to statements Form statement statements\n"); }
@@ -316,7 +328,7 @@ statements:		statement statements		{ Trace("Reducing to statements Form statemen
 			;
 
 statement:		ID '=' expression ';'						{ Trace("Reducing to statement Form ID '=' expression ';'\n"); }
-			|	ID '[' integerExpr']' '=' expression ';'	{ Trace("Reducing to statement Form ID '[' integerExpr']' '=' expression ';'\n"); }
+			|	ID '[' expression']' '=' expression ';'		{ Trace("Reducing to statement Form ID '[' expression']' '=' expression ';'\n"); }
 			|	KW_PRINT expression	';'						{ Trace("Reducing to statement Form KW_PRINT expression	';'\n"); }
 			|	KW_PRINTLN expression ';'					{ Trace("Reducing to statement Form KW_PRINTLN expression ';'\n"); }
 			|	KW_RETURN expression ';'					{ Trace("Reducing to statement Form KW_RETURN expression ';'\n"); }
@@ -339,8 +351,82 @@ expression:		'-' expression %prec UMINUS					{ Trace("Reducing to expression For
 			|	boolExpr									{ Trace("Reducing to expression Form boolExpr\n"); }
 			|	stringExpr									{ Trace("Reducing to expression Form stringExpr\n"); }
 			|	functionInvoc								{ Trace("Reducing to expression Form functionInvoc\n"); }
-			|	ID											{ Trace("Reducing to expression Form ID\n"); }
-			|	ID '[' integerExpr ']'						{ Trace("Reducing to expression Form ID '[' integerExpr ']'\n"); }
+			|	ID											{ 
+																Trace("Reducing to expression Form ID\n");
+
+																variableEntry ve = symTabs.lookup($1.stringVal);
+																if (ve.type == T_404)
+																	yyerror("ID not found");
+																else if (ve.type == T_NONE)
+																	$$.notInit = true;
+																else if (ve.isArr)
+																	yyerror("Array no give index");
+																else
+																{
+																	if (ve.type == T_INT)
+																	{	
+																		$$.tokenType = T_INT;
+																		$$.intVal = ve.data.intVal;
+																	}
+																	else if (ve.type == T_FLOAT)
+																	{	
+																		$$.tokenType = T_FLOAT;
+																		$$.floatVal = ve.data.floatVal;
+																	}
+																	else if (ve.type == T_BOOL)
+																	{	
+																		$$.tokenType = T_BOOL;
+																		$$.boolVal = ve.data.boolVal;
+																	}
+																	else if (ve.type == T_STRING)
+																	{	
+																		$$.tokenType = T_STRING;
+																		$$.stringVal = ve.data.stringVal;
+																	}
+																}
+															}
+			|	ID '[' expression ']'						{
+																Trace("Reducing to expression Form ID '[' expression ']'\n");
+
+																variableEntry ve = symTabs.lookup($1.stringVal);
+
+																if ($3.tokenType != T_INT)
+																	yyerror("Array index not integer");
+
+																int index = $3.intVal;
+
+																if (ve.type == T_404)
+																	yyerror("ID not found");
+																else if (ve.type == T_NONE)
+																	$$.notInit = true;
+																else if (!ve.isArr)
+																	yyerror("Not Array, can't use '[]'");
+																else
+																{
+																	if (ve.type == T_INT)
+																	{	
+																		$$.tokenType = T_INT;
+																		$$.intVal = ve.data.intArr[index];
+																	}
+																	else if (ve.type == T_FLOAT)
+																	{	
+																		$$.tokenType = T_FLOAT;
+																		$$.floatVal = ve.data.floatArr[index];
+																	}
+																	else if (ve.type == T_BOOL)
+																	{	
+																		$$.tokenType = T_BOOL;
+																		$$.boolVal = ve.data.boolArr[index];
+																	}
+																	else if (ve.type == T_STRING)
+																	{	
+																		$$.tokenType = T_STRING;
+																		$$.stringVal = ve.data.stringArr[index];
+																	}
+																	else
+																		yyerror("Array no give index");
+																}
+															}
 			;
 
 integerExpr:	INTEGER		{ Trace("Reducing to integerExpr Form INTEGER\n"); }
@@ -349,10 +435,38 @@ integerExpr:	INTEGER		{ Trace("Reducing to integerExpr Form INTEGER\n"); }
 realExpr:		REAL		{ Trace("Reducing to realExpr Form REAL\n"); }
 			;
 
-boolExpr:		KW_TRUE										{ Trace("Reducing to boolExpr Form KW_TRUE\n"); }
-			|	KW_FALSE									{ Trace("Reducing to boolExpr Form KW_FALSE\n"); }
-			|	'!' expression								{ Trace("Reducing to boolExpr Form '!' expression\n"); }
-			|	expression '>' expression					{ Trace("Reducing to boolExpr Form expression '>' expression\n"); }
+boolExpr:		KW_TRUE										{ 
+																Trace("Reducing to boolExpr Form KW_TRUE\n"); 
+																$$.tokenType = T_BOOL; 
+																$$.boolVal = true;
+															}
+			|	KW_FALSE									{ 
+																Trace("Reducing to boolExpr Form KW_FALSE\n"); 
+																$$.tokenType = T_BOOL; 
+																$$.boolVal = false;
+															}
+			|	'!' expression								{ 
+																Trace("Reducing to boolExpr Form '!' expression\n");
+																$$.tokenType = T_BOOL; 
+																$$.boolVal = !$2.boolVal;
+															}
+			|	expression '>' expression					{ 
+																Trace("Reducing to boolExpr Form expression '>' expression\n"); 
+																$$.tokenType = T_BOOL;
+																if ($1.notInit)
+																	yyerror("'>' left arg is not initial.");
+																if ($3.notInit)
+																	yyerror("'>' right arg is not initial.");
+
+																if ($1.tokenType == T_INT && $3.tokenType == T_INT)
+																	$$.boolVal = $1.intVal > $3.intVal;
+																else if ($1.tokenType == T_FLOAT && $3.tokenType == T_FLOAT)
+																	$$.boolVal = $1.floatVal > $3.floatVal;
+																else if ($1.tokenType == T_STRING && $3.tokenType == T_STRING)
+																	$$.boolVal = $1.stringVal > $3.stringVal;
+																else 
+																	yyerror("'>' arg type error.");							
+															}
 			|	expression '<' expression					{ Trace("Reducing to boolExpr Form expression '<' expression\n"); }
 			|	boolExpr OP_AND boolExpr					{ Trace("Reducing to boolExpr Form boolExpr OP_AND boolExpr\n"); }
 			|	boolExpr OP_OR boolExpr						{ Trace("Reducing to boolExpr Form boolExpr OP_OR boolExpr\n"); }
@@ -372,7 +486,14 @@ parameters:		expression ',' parameters	{ Trace("Reducing to parameters Form expr
 			|	expression					{ Trace("Reducing to parameters Form expression\n"); }
 			;
 
-block:		'{' statements '}'				{ Trace("Reducing to block Form '{' statements '}'\n"); }
+block:			'{' 						{
+												Trace("Reducing to block Form '{' statements '}'\n");
+												symTabs.push_table("this");
+											}
+				scopeContent '}'			{ 
+												Trace("Reducing to block Form '{' statements '}'\n");
+												symTabs.pop_table();
+											}
 			;
 
 conditional:	KW_IF '(' boolExpr ')' block				{ Trace("Reducing to conditional Form KW_IF '(' boolExpr ')' block\n"); }
