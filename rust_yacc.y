@@ -332,6 +332,8 @@ statement:		ID '=' expression ';'						{
 																variableEntry ve = symTabs.lookup($1.stringVal);
 																if (ve.type == T_404)
 																	yyerror("ID not found");
+																else if (ve.isConst == true)
+																	yyerror("Constant can't be assign");
 																else if (ve.type == T_NONE)
 																	ve.type = $3.tokenType;
 																else if (ve.type == T_FLOAT && $3.tokenType == T_INT)
