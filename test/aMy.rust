@@ -1,21 +1,15 @@
-// variables
 let mut c = 1 + 4 + (51 % 5 * 9);
-let mut a = (true && false) == false;
-
+let mut a:bool = (true && false) == false;
+let mut b = (a && false) == false;
     
-// function declaration
-fn add(a:int, b:int) -> int
-{
-  return a+b;
-}
-    
-// main function
 fn main( )
 {
-{
-    let a = 100;
+
+    let mut a = 100;
+    let mut d = -a;
+    a = d + - -11;
     {
         let a = 101;
     return;
-    }}
+    }
 }
