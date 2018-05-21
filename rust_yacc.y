@@ -684,13 +684,21 @@ boolExpr:		KW_TRUE										{
 																else
 																	yyerror("'<' arg type error.");
 															}
-			|	boolExpr OP_AND boolExpr					{
+			|	expression OP_AND expression				{
 																Trace("Reducing to boolExpr Form boolExpr OP_AND boolExpr\n");
+
+																if (!($1.tokenType == T_BOOL && $3.tokenType == T_BOOL))
+																	yyerror("'&&' arg type error.");
+
 																$$.tokenType = T_BOOL;
 																$$.boolVal = $1.boolVal && $3.boolVal;
 															}
-			|	boolExpr OP_OR boolExpr						{
+			|	expression OP_OR expression					{
 																Trace("Reducing to boolExpr Form boolExpr OP_OR boolExpr\n");
+
+																if (!($1.tokenType == T_BOOL && $3.tokenType == T_BOOL))
+																	yyerror("'&&' arg type error.");
+
 																$$.tokenType = T_BOOL;
 																$$.boolVal = $1.boolVal || $3.boolVal;
 															}
