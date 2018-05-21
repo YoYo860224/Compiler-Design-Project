@@ -4,8 +4,8 @@
 #include <string.h>
 #include <vector>
 
-
-variableEntry ve_fn(std::string name, int type){
+variableEntry ve_fn(std::string name, int type)
+{
 	variableEntry ve;
 	ve.name = name;
 	ve.type = type;
@@ -16,15 +16,15 @@ variableEntry ve_fn(std::string name, int type){
 	ve.arrSize = 1;
 	ve.data.intVal = 0;
 	if (type == T_STRING)
-	{	
+	{
 		ve.data.stringVal = new char[1];
 		ve.data.stringVal[0] = '0';
 	}
 	return ve;
 }
 
-
-variableEntry ve_basic(std::string name, int type, bool isConst){
+variableEntry ve_basic(std::string name, int type, bool isConst)
+{
 	variableEntry ve;
 	ve.name = name;
 	ve.type = type;
@@ -35,15 +35,15 @@ variableEntry ve_basic(std::string name, int type, bool isConst){
 	ve.arrSize = 1;
 	ve.data.intVal = 0;
 	if (type == T_STRING)
-	{	
+	{
 		ve.data.stringVal = new char[1];
 		ve.data.stringVal[0] = '0';
 	}
 	return ve;
 }
 
-
-variableEntry ve_basic_notInit(std::string name, int type, bool isConst){
+variableEntry ve_basic_notInit(std::string name, int type, bool isConst)
+{
 	variableEntry ve;
 	ve.name = name;
 	ve.type = type;
@@ -54,14 +54,15 @@ variableEntry ve_basic_notInit(std::string name, int type, bool isConst){
 	ve.arrSize = 1;
 	ve.data.intVal = 0;
 	if (type == T_STRING)
-	{	
+	{
 		ve.data.stringVal = new char[1];
 		ve.data.stringVal[0] = '0';
 	}
 	return ve;
 }
 
-variableEntry ve_arr(std::string name, int type, bool isConst, int arrSize){
+variableEntry ve_arr(std::string name, int type, bool isConst, int arrSize)
+{
 	variableEntry ve;
 	ve.name = name;
 	ve.type = type;
@@ -72,7 +73,7 @@ variableEntry ve_arr(std::string name, int type, bool isConst, int arrSize){
 	ve.arrSize = arrSize;
 	ve.data.intVal = 0;
 	if (type == T_STRING)
-	{	
+	{
 		ve.data.stringVal = new char[1];
 		ve.data.stringVal[0] = '0';
 	}
@@ -272,7 +273,6 @@ variableEntry symbolTables::lookup(std::string name)
 	notFound.type = T_404;
 	return notFound;
 }
-
 
 variableEntry symbolTables::lookupForNowScope(std::string name)
 {

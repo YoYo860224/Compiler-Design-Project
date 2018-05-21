@@ -42,11 +42,13 @@ typedef struct variableEntry{
 	};
 } variableEntry;
 
+// Some make variableEntry methon.
 variableEntry ve_fn(std::string name, int type);
 variableEntry ve_basic(std::string name, int type, bool isConst);
 variableEntry ve_basic_notInit(std::string name, int type, bool isConst);
 variableEntry ve_arr(std::string name, int type, bool isConst, int arrSize);
 
+// Per table, store their name and variableEntry array.
 typedef struct{
 	std::string scopeName;
 	std::vector<variableEntry> variableEntries;
@@ -55,22 +57,21 @@ typedef struct{
 class symbolTables
 {
 private:
-	std::vector<symbolTable> tables;
+	std::vector<symbolTable> tables;					// stack of symbolTable
 public:
 	symbolTables();
 
-	int push_table(std::string name);
-	int update_tableName(std::string name);
-	int pop_table();
-	int show_topTable();
+	int push_table(std::string name);					// Push table.
+	int update_tableName(std::string name);				// Ppdate top table name.
+	int pop_table();									// Pop out and show.
+	int show_topTable();								// Show top table.
 
-	int addVariable(variableEntry var);
-	int editVariable(variableEntry var);
-	int forPreloadFN(int type);
+	int addVariable(variableEntry var);					// Add variableEntry to top table.
+	int editVariable(variableEntry var);				// Edit same name variableEntry in top table.
+	int forPreloadFN(int type);							// For function, edit its type.
 
-	variableEntry lookup(std::string name);
-	variableEntry lookupForNowScope(std::string name);
-
+	variableEntry lookup(std::string name);				// Look up from top table to bottom.
+	variableEntry lookupForNowScope(std::string name);	// Look up top table.
 };
 
 #endif

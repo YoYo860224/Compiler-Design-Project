@@ -50,7 +50,7 @@
 #define MAX_LINE_LENG 1024
 
 extern "C"{
-	int yywrap();				
+	int yywrap();
 	int yylex();
 }
 

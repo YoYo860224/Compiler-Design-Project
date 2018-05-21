@@ -22,7 +22,6 @@ Compilier for Rust_.
 #define YACC_PRINT          // Comment this to hide parse info.
 ```
 
-
 ## Compiler lex yacc
 ``` bash
 $ make
@@ -30,7 +29,7 @@ $ make
 
 ## Excute
 ``` bash
-$ ./rust.exe < "yourfile"   // Compiler yourfile. 
+$ ./rust.exe < "yourfile"   // Compiler yourfile.
 $ make run                  // Compiler test/aMy.rust.
 ```
 
