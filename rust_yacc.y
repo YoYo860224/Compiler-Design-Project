@@ -398,10 +398,10 @@ statement:		ID '=' expression ';'						{
 expression:		'-' expression %prec UMINUS					{
 																Trace("Reducing to expression Form '-' expression\n");
 																$$ = $2;
-																if ($2.tokenType == T_INT)
-																	$2.intVal *= -1;
-																else if ($2.tokenType == T_FLOAT)
-																	$2.floatVal *= -1;
+																if ($$.tokenType == T_INT)
+																	$$.intVal *= -1;
+																else if ($$.tokenType == T_FLOAT)
+																	$$.floatVal *= -1;
 																else
 																	yyerror("'-' arg type error.");
 															}
