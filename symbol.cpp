@@ -242,7 +242,10 @@ int symbolTables::editVariable(variableEntry var)
 			if (ve.name == var.name)
 			{
 				if (!ve.isConst)
+				{	
 					tables[i].variableEntries[j] = var;
+					return 1;
+				}
 			}
 		}
 	}
