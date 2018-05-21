@@ -9,6 +9,7 @@ OTHER_SOURCE = symbol.cpp
 
 $(OUTPUT_FILENAME): clean lex.yy.o y.tab.o
 	$(CC) lex.yy.o y.tab.o $(OTHER_SOURCE) -o $(OUTPUT_FILENAME)
+	rm -f lex.yy.cpp y.tab.cpp y.tab.h  *.o 
 
 lex.yy.o: lex.yy.cpp y.tab.h
 	$(CC) -c lex.yy.cpp
