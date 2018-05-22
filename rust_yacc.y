@@ -98,7 +98,7 @@ symbolTables symTabs = symbolTables();
 %left '!'
 %left '>' '<' OP_GREAT_EQUAL OP_EQUAL OP_LESS_EQUAL OP_NOT_EQUAL
 %left '+' '-'
-%left '*' '/'
+%left '*' '/' '%'
 %nonassoc UMINUS
 
 %%
@@ -333,9 +333,12 @@ statement:		ID '=' expression ';'						{
 																	yyerror("ID not found");
 																else if (ve.isConst == true)
 																	yyerror("Constant can't be assign");
+																else if (ve.isFn)
+																	yyerror("Function can't be assign");
 																else if (ve.type == T_NONE)
 																	ve.type = $3.tokenType;
-																else if (ve.type == T_FLOAT && $3.tokenType == T_INT)
+
+																if (ve.type == T_FLOAT && $3.tokenType == T_INT)
 																		ve.data.floatVal = $3.intVal;
 																else if (ve.type != $3.tokenType)
 																	yyerror("expression is not equal to expression");
@@ -564,6 +567,8 @@ expression:		'-' expression %prec UMINUS					{
 																	$$.notInit = true;
 																else if (ve.isArr)
 																	yyerror("Array no give index");
+																else if (ve.isFn)
+																	yyerror("Function no parameters");
 																else
 																{
 																	if (ve.type == T_INT)
@@ -792,6 +797,7 @@ functionInvoc:	ID '(' parameters ')'		{
 
 parameters:		expression ',' parameters	{ Trace("Reducing to parameters Form expression ',' parameters\n"); }
 			|	expression					{ Trace("Reducing to parameters Form expression\n"); }
+			|	%empty						{ Trace("Reducing to parameters Form empty\n"); }
 			;
 
 block:			'{' 						{
