@@ -37,6 +37,9 @@ typedef struct variableEntry{
 	bool isArr;
 	bool isFn;
 	int arrSize;
+	int argSize;
+	int argType[15];
+	int stackIndex;
 	union {
 		variableData data;
 	};
@@ -68,7 +71,10 @@ public:
 
 	int addVariable(variableEntry var);					// Add variableEntry to top table.
 	int editVariable(variableEntry var);				// Edit same name variableEntry in top table.
-	int forPreloadFN(int type);							// For function, edit its type.
+
+	int addRetToPreloadFN(int type);					// For function, edit its return type.
+	int addArgToPreloadFN(int type);					// For function, edit its argument type.
+	variableEntry nowFuncVE();
 
 	variableEntry lookup(std::string name);				// Look up from top table to bottom.
 	variableEntry lookupForNowScope(std::string name);	// Look up top table.

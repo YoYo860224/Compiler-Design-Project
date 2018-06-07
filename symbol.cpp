@@ -14,6 +14,7 @@ variableEntry ve_fn(std::string name, int type)
 	ve.isArr = false;
 	ve.isFn = true;
 	ve.arrSize = 1;
+	ve.argSize = 0;
 	ve.data.intVal = 0;
 	if (type == T_STRING)
 	{
@@ -33,6 +34,7 @@ variableEntry ve_basic(std::string name, int type, bool isConst)
 	ve.isArr = false;
 	ve.isFn = false;
 	ve.arrSize = 1;
+	ve.argSize = 0;
 	ve.data.intVal = 0;
 	if (type == T_STRING)
 	{
@@ -52,6 +54,7 @@ variableEntry ve_basic_notInit(std::string name, int type, bool isConst)
 	ve.isArr = false;
 	ve.isFn = false;
 	ve.arrSize = 1;
+	ve.argSize = 0;
 	ve.data.intVal = 0;
 	if (type == T_STRING)
 	{
@@ -72,6 +75,7 @@ variableEntry ve_arr(std::string name, int type, bool isConst, int arrSize)
 	ve.isFn = false;
 	ve.arrSize = arrSize;
 	ve.data.intVal = 0;
+	ve.argSize = 0;
 	if (type == T_STRING)
 	{
 		ve.data.stringVal = new char[1];
@@ -252,13 +256,27 @@ int symbolTables::editVariable(variableEntry var)
 	return 0;
 }
 
-int symbolTables::forPreloadFN(int type)
+int symbolTables::addRetToPreloadFN(int type)
 {
 	tables[tables.size()-2].variableEntries.back().type = type;
 	if (type == T_STRING)
-	{	tables[tables.size()-2].variableEntries.back().data.stringVal = new char[1];
+	{	
+		tables[tables.size()-2].variableEntries.back().data.stringVal = new char[1];
 		tables[tables.size()-2].variableEntries.back().data.stringVal[0] = '0';
 	}
+}
+
+int symbolTables::addArgToPreloadFN(int type)
+{
+
+	int nowArgSize = tables[tables.size()-2].variableEntries.back().argSize;
+	tables[tables.size()-2].variableEntries.back().argType[nowArgSize] = type;
+	tables[tables.size()-2].variableEntries.back().argSize += 1;
+}
+
+variableEntry symbolTables::nowFuncVE()
+{
+	return tables[tables.size()-2].variableEntries.back();
 }
 
 variableEntry symbolTables::lookup(std::string name)

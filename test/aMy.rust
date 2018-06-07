@@ -1,15 +1,26 @@
-let mut c = 1 + 4 + (51 % 5 * 9);
-let mut a:bool = (true && false) == false;
-let mut b = (a && false) == false;
-    
-fn main( )
-{
+/*
+ * Example with Functions
+ */
 
-    let mut a = 100;
-    let mut d = -a;
-    a = d + - -11;
-    {
-        let a = 101;
-    return;
-    }
+// variables
+let mut c;
+let mut a = 5;
+    
+// function declaration
+fn add(a:int, b:bool) -> int
+{
+  //return a+b;
+}
+    
+// main function
+fn main() 
+{
+  c = add(a, 10);
+  if (c > 10) {
+    print -c;
+  }
+  else {
+    print c;
+  }
+  println "Hello World";
 }

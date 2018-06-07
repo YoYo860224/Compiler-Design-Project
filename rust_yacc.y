@@ -23,12 +23,17 @@ extern "C" {
 
 using namespace std;
 
-// Declare for file
+// Declare for file.
 char const *filename = "_rustCompiler.jasm";
 fstream fp;
+int nowTabs = 0;
+void printTabs();
 
 // Global symbol table.
 symbolTables symTabs = symbolTables();
+
+// Some global for check.
+bool hasReturned = 0;
 
 %}
 
@@ -286,11 +291,58 @@ functionDec:	KW_FN ID '('				{
 												if (!symTabs.addVariable(ve))
 													yyerror("Re declaration.");
 												symTabs.push_table($2.stringVal);
+
+												printTabs();
+												fp << "method public static ";
 											}
-			 	formalArgs ')' fnType
+			 	formalArgs ')' fnType		{
+												variableEntry ve = symTabs.nowFuncVE();
+												if (ve.name == "main")
+													fp << "void main(java.lang.String[])" << endl;
+												else
+												{
+													if (ve.type == T_INT) 
+														fp << "int ";
+													else if (ve.type == T_BOOL)
+														fp << "bool ";
+													
+													fp << ve.name;
+													fp << "(";
+
+													for (int i = 0; i < ve.argSize; i++) 
+													{
+														if (ve.argType[i] == T_INT) 
+															fp << "int";
+														else if (ve.argType[i] == T_BOOL) 
+															fp << "bool";
+														
+														if (i != ve.argSize - 1)
+															fp << ", ";
+													}
+
+													fp << ")" << endl;
+												}
+
+												printTabs();
+												fp << "max_stack 15" << endl;
+												printTabs();
+												fp << "max_locals 15" << endl;
+												printTabs();
+												fp << "{" << endl;
+												nowTabs++;
+				 							}
 				fnScope						{
 												Trace("Reducing to functionDec Form KW_FN ID '(' formalArgs ')' fnType fnScope\n");
 												symTabs.pop_table();
+
+												if (!hasReturned) {
+													printTabs();
+													fp << "return" << endl;
+												}
+
+												nowTabs--;
+												printTabs();
+												fp << "}" << endl;
 											}
 				;
 
@@ -301,6 +353,8 @@ formalArgs:		ID ':' type 				{
 
 												if (!symTabs.addVariable(ve))
 													yyerror("Re declaration.");
+
+												symTabs.addArgToPreloadFN($3.tokenType);
 											}
 			|	ID ':' type ',' formalArgs	{
 												Trace("Reducing to formalArgs Form ID ':' type ',' formalArgs\n");
@@ -309,13 +363,15 @@ formalArgs:		ID ':' type 				{
 
 												if (!symTabs.addVariable(ve))
 													yyerror("Re declaration.");
+
+												symTabs.addArgToPreloadFN($3.tokenType);
 											}
 			|	%empty						{ Trace("Reducing to formalArgs Form empty ':' type\n"); }
 			;
 
 fnType:			'-' '>' type				{
 												Trace("Reducing to fnScope Form '-' '>' type\n");
-												symTabs.forPreloadFN($3.tokenType);
+												symTabs.addRetToPreloadFN($3.tokenType);
 											}
 			|	%empty						{ Trace("Reducing to fnType Form empty\n"); }
 
@@ -833,6 +889,12 @@ int yyerror(const char *s)
 	return 0;
 }
 
+void printTabs()
+{
+	for (int i = 0; i < nowTabs; i++)
+		fp << "\t";
+}
+
 int main(void)
 {
     fp.open(filename, ios::out);
@@ -842,6 +904,7 @@ int main(void)
 	}
 
 	fp << "class proj3" << endl << "{" << endl;
+	nowTabs++;
 
 	yyparse();
 
