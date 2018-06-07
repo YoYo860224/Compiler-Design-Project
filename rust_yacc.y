@@ -1,5 +1,6 @@
 %{
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <string>
 #include <stdlib.h>
@@ -19,6 +20,12 @@ extern "C" {
 	extern int yylex();
 	extern int yylineno;
 }
+
+using namespace std;
+
+// Declare for file
+char const *filename = "_rustCompiler.jasm";
+fstream fp;
 
 // Global symbol table.
 symbolTables symTabs = symbolTables();
@@ -828,7 +835,18 @@ int yyerror(const char *s)
 
 int main(void)
 {
+    fp.open(filename, ios::out);
+    if (!fp) {
+		fprintf(stderr, "ERROR: Fail to open %s\n", filename);
+		exit(0);
+	}
+
+	fp << "class proj3" << endl << "{" << endl;
+
 	yyparse();
+
+	fp << "}";
+    fp.close();
 
 	return 0;
 }
