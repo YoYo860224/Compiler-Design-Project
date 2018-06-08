@@ -861,10 +861,12 @@ expression:		'-' expression %prec UMINUS					{
 																	else
 																	{
 																		printTabs();
-																		fp << "iload " << ve.stackIndex << endl;
+																		if (ve.type == T_INT)
+																			fp << "iload " << ve.stackIndex << endl;
+																		else if (ve.type == T_BOOL)
+																			fp << "iload " << ve.stackIndex << endl;
 																	}
 																}
-
 															}
 			|	ID '[' expression ']'						{
 																Trace("Reducing to expression Form ID '[' expression ']'\n");
@@ -1231,7 +1233,7 @@ block:			'{' 						{
 											}
 			;
 
-ifStament:		KW_IF '(' boolExpr ')' 				{
+ifStament:		KW_IF '(' conBoolExpr ')' 				{
 														printTabs();
 														fp << "ifeq " << "L" << nowLabelIndex << endl;
 														topElseLabel.push_back(nowLabelIndex);
@@ -1268,7 +1270,7 @@ loop:			KW_WHILE			{
 										$1.beginLabel = nowLabelIndex;
 										nowLabelIndex++;
 									}
-				'(' boolExpr ')' 	{
+				'(' conBoolExpr ')' {
 										printTabs();
 										fp << "ifeq " << "L" << nowLabelIndex << endl;
 										$1.exitLabel = nowLabelIndex;
@@ -1284,12 +1286,57 @@ loop:			KW_WHILE			{
 									}
 			;
 
+conBoolExpr:	boolExpr			{ Trace("Reducing to conBoolExpr Form boolExpr"); }
+			|	ID					{
+										Trace("Reducing to conBoolExpr Form ID"); 
+										variableEntry ve = symTabs.lookup($1.stringVal);
+										if (ve.type == T_404)
+											yyerror("ID not found");
+										else if (ve.type == T_NONE)
+											yyerror("ID not init");
+										else if (ve.isArr)
+											yyerror("Array no give index");
+										else if (ve.isFn)
+											yyerror("Function no parameters");
+
+										if (ve.isConst)
+										{
+											printTabs();
+											if (ve.type == T_INT)
+												fp << "sipush " << ve.data.intVal << endl;
+											else if (ve.type == T_BOOL)
+												fp << "iconst_" << ve.data.boolVal << endl;
+											else if (ve.type == T_STRING)
+												fp << "ldc " << ve.data.stringVal << endl;
+										}
+										else
+										{
+											if (ve.isGlobal)
+											{
+												printTabs();
+												if (ve.type == T_INT)
+													fp << "getstatic int " << outputfileName << "." << ve.name << endl;
+												else if (ve.type == T_BOOL)
+													fp << "getstatic int " << outputfileName << "." << ve.name << endl;
+											}
+											else
+											{
+												printTabs();
+												if (ve.type == T_INT)
+													fp << "iload " << ve.stackIndex << endl;
+												else if (ve.type == T_BOOL)
+													fp << "iload " << ve.stackIndex << endl;
+											}
+										}
+									}
+			;
+
 %%
 
 int yyerror(const char *s)
 {
 	fprintf(stderr, "ERROR: %s at line number:%d\n", s, yylineno);
-	exit(0);
+	exit(-1);
 	return 0;
 }
 
@@ -1306,7 +1353,7 @@ int main(int argc, char *argv[])
 	{
         fprintf(stderr, "Usage: rust.exe <filename>\n");
 		fprintf(stderr, "Usage: rust.exe <filename> <outputfileName>\n");
-        exit(0);
+        exit(-1);
     }
 
 	yyin = fopen(argv[1], "r");
@@ -1318,7 +1365,7 @@ int main(int argc, char *argv[])
 	fp.open(outputfileName + ".jasm", ios::out);
     if (!fp) {
 		fprintf(stderr, "ERROR: Fail to open %s\n", outputfileName.c_str());
-		exit(0);
+		exit(-1);
 	}
 
 	fp << "class " << outputfileName << endl << "{" << endl;
