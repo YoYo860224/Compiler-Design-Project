@@ -39,7 +39,6 @@ int nowStackIndex = 0;
 int nowLabelIndex = 0;
 
 vector<int> topElseLabel;
-vector<int> topIfLable;
 
 %}
 
@@ -59,9 +58,9 @@ vector<int> topIfLable;
 
 %union{
 	struct{
-		int ifLabel;
-		int elseLabel;
-	} StamentLabel;
+		int beginLabel;
+		int exitLabel;
+	} whileKeep;
 }
 
 %token OP_INCREMENT
@@ -105,12 +104,10 @@ vector<int> topIfLable;
 %token KW_TRUE
 %token KW_USE
 %token KW_WHERE
+%token KW_IF
+%token KW_ELSE
 
-%token <StamentLabel> KW_IF
-%token <StamentLabel> KW_ELSE
-%token <StamentLabel> KW_WHILE
-
-%type <StamentLabel> ifStament elseStament loop
+%token <whileKeep> KW_WHILE
 
 %token <Token> INTEGER
 %token <Token> STRING
@@ -996,7 +993,7 @@ boolExpr:		KW_TRUE										{
 																fp << "L" << nowLabelIndex << ":" << endl;
 																printTabs();
 																fp << "iconst_1" << endl;
-																fp << "L" << nowLabelIndex + 2 << ":" << endl;
+																fp << "L" << nowLabelIndex + 1 << ":" << endl;
 																nowLabelIndex += 2;
 															}
 			|	expression OP_AND expression				{
@@ -1053,7 +1050,7 @@ boolExpr:		KW_TRUE										{
 																fp << "L" << nowLabelIndex << ":" << endl;
 																printTabs();
 																fp << "iconst_1" << endl;
-																fp << "L" << nowLabelIndex + 2 << ":" << endl;
+																fp << "L" << nowLabelIndex + 1 << ":" << endl;
 																nowLabelIndex += 2;
 															}
 			|	expression OP_NOT_EQUAL expression			{
@@ -1086,7 +1083,7 @@ boolExpr:		KW_TRUE										{
 																fp << "L" << nowLabelIndex << ":" << endl;
 																printTabs();
 																fp << "iconst_1" << endl;
-																fp << "L" << nowLabelIndex + 2 << ":" << endl;
+																fp << "L" << nowLabelIndex + 1 << ":" << endl;
 																nowLabelIndex += 2;
 															}
 			|	expression OP_GREAT_EQUAL expression		{
@@ -1117,7 +1114,7 @@ boolExpr:		KW_TRUE										{
 																fp << "L" << nowLabelIndex << ":" << endl;
 																printTabs();
 																fp << "iconst_1" << endl;
-																fp << "L" << nowLabelIndex + 2 << ":" << endl;
+																fp << "L" << nowLabelIndex + 1 << ":" << endl;
 																nowLabelIndex += 2;
 															}
 			|	expression OP_LESS_EQUAL expression			{
@@ -1148,7 +1145,7 @@ boolExpr:		KW_TRUE										{
 																fp << "L" << nowLabelIndex << ":" << endl;
 																printTabs();
 																fp << "iconst_1" << endl;
-																fp << "L" << nowLabelIndex + 2 << ":" << endl;
+																fp << "L" << nowLabelIndex + 1 << ":" << endl;
 																nowLabelIndex += 2;
 															}
 			;
@@ -1241,7 +1238,24 @@ elseStament:	KW_ELSE 							{
 													}
 			;
 
-loop:			KW_WHILE '(' boolExpr ')' block		{ Trace("Reducing to loop Form KW_WHILE '(' boolExpr ')' block\n"); }
+loop:			KW_WHILE			{
+										fp << "L" << nowLabelIndex << ":" << endl;
+										$1.beginLabel = nowLabelIndex;
+										nowLabelIndex++;
+									} 
+				'(' boolExpr ')' 	{
+										printTabs();
+										fp << "ifeq " << "L" << nowLabelIndex << endl;
+										$1.exitLabel = nowLabelIndex;
+										nowLabelIndex++;
+									}
+				
+				block				{ 
+										Trace("Reducing to loop Form KW_WHILE '(' boolExpr ')' block\n"); 
+										printTabs();
+										fp << "goto " << "L" << $1.beginLabel << endl;
+										fp << "L" << $1.exitLabel << ":" << endl;
+									}
 			;
 
 %%
