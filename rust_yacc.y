@@ -19,12 +19,12 @@ extern "C" {
 	int yyerror(const char *s);
 	extern int yylex();
 	extern int yylineno;
+	extern FILE* yyin;
 }
 
 using namespace std;
 
 // Declare for file.
-char const *filename = "_rustCompiler.jasm";
 fstream fp;
 int nowTabs = 0;
 void printTabs();
@@ -162,9 +162,9 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 																		
 																		printTabs();
 																		if (ve.type== T_INT)
-																			fp << "field static integer " << ve.name << endl;
+																			fp << "field static int " << ve.name << endl;
 																		else if (ve.type == T_BOOL)
-																			fp << "field static integer " << ve.name << endl;
+																			fp << "field static int " << ve.name << endl;
 																	}
 																	else 
 																	{
@@ -196,9 +196,9 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 																		
 																		printTabs();
 																		if (ve.type == T_INT)
-																			fp << "field static integer " << ve.name << " = " << ve.data.intVal << endl;
+																			fp << "field static int " << ve.name << " = " << ve.data.intVal << endl;
 																		else if (ve.type == T_BOOL)
-																			fp << "field static integer " << ve.name << " = " << ve.data.boolVal << endl;
+																			fp << "field static int " << ve.name << " = " << ve.data.boolVal << endl;
 																	}
 																	else 
 																	{
@@ -240,9 +240,9 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 																		
 																		printTabs();
 																		if (ve.type == T_INT)
-																			fp << "field static integer " << ve.name << " = " << ve.data.intVal << endl;
+																			fp << "field static int " << ve.name << " = " << ve.data.intVal << endl;
 																		else if (ve.type == T_BOOL)
-																			fp << "field static integer " << ve.name << " = " << ve.data.boolVal << endl;
+																			fp << "field static int " << ve.name << " = " << ve.data.boolVal << endl;
 																	}
 																	else 
 																	{
@@ -270,7 +270,7 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 																		ve.isGlobal = true;
 																		
 																		printTabs();
-																		fp << "field static integer " << ve.name << endl;
+																		fp << "field static int " << ve.name << endl;
 																	}
 																	else 
 																	{
@@ -968,15 +968,30 @@ void printTabs()
 		fp << "\t";
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
-    fp.open(filename, ios::out);
+    // Open srcfile.
+	if (argc != 2 && argc !=3) 
+	{
+        fprintf(stderr, "Usage: rust.exe <filename>\n");
+		fprintf(stderr, "Usage: rust.exe <filename> <outputfileName>\n");
+        exit(0);
+    }
+
+	yyin = fopen(argv[1], "r");
+	
+	string outputfileName = "proj3";
+	if (argc == 3)
+		outputfileName = argv[2];
+
+	// Write jasm.
+	fp.open(outputfileName + ".jasm", ios::out);
     if (!fp) {
-		fprintf(stderr, "ERROR: Fail to open %s\n", filename);
+		fprintf(stderr, "ERROR: Fail to open %s\n", outputfileName.c_str());
 		exit(0);
 	}
 
-	fp << "class proj3" << endl << "{" << endl;
+	fp << "class " << outputfileName << endl << "{" << endl;
 	nowTabs++;
 
 	yyparse();

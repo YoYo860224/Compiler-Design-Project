@@ -3,8 +3,8 @@ LEX = flex
 YACC = bison
 LEX_FILENAME = rust_lex.l
 YACC_FILENAME = rust_yacc.y
-OUTPUT_FILENAME = rust.exe
-TEST_FILENAME = ./test/aMy.rust
+OUTPUT_FILENAME = _rust.exe
+TEST_FILENAME = ./test/_proj3.rust
 OTHER_SOURCE = symbol.cpp
 
 $(OUTPUT_FILENAME): clean lex.yy.o y.tab.o
@@ -25,7 +25,16 @@ lex.yy.cpp: $(LEX_FILENAME)
 	$(LEX) -o lex.yy.cpp $(LEX_FILENAME)
 
 clean:
-	rm -f lex.yy.cpp y.tab.cpp y.tab.h  *.o *.exe 
+	rm -f lex.yy.cpp y.tab.cpp y.tab.h  *.o *.exe *.class *.jasm
 
-run: 
-	./$(OUTPUT_FILENAME) < $(TEST_FILENAME)
+allRun: doCompiler javaa java
+
+doCompiler: $(TEST_FILENAME)
+	./$(OUTPUT_FILENAME)  $(TEST_FILENAME)
+
+javaa: proj3.jasm
+	javaa/javaa proj3.jasm
+
+java: javaa/proj3.class
+	java proj3
+	
