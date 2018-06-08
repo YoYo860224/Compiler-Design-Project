@@ -39,7 +39,7 @@ typedef struct variableEntry {
 	};
 
 	bool isGlobal;		// if not global variable, use stack index.
-	int stackIndex;		
+	int stackIndex;
 
 	bool isFn;			// if function, need argument.
 	int argSize;

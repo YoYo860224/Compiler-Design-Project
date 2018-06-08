@@ -9,7 +9,7 @@ OTHER_SOURCE = symbol.cpp
 
 $(OUTPUT_FILENAME): clean lex.yy.o y.tab.o
 	$(CC) lex.yy.o y.tab.o $(OTHER_SOURCE) -o $(OUTPUT_FILENAME)
-	rm -f lex.yy.cpp y.tab.cpp y.tab.h  *.o 
+	rm -f lex.yy.cpp y.tab.cpp y.tab.h  *.o
 
 lex.yy.o: lex.yy.cpp y.tab.h
 	$(CC) -c lex.yy.cpp
@@ -30,11 +30,11 @@ clean:
 allRun: doCompiler javaa java
 
 doCompiler: $(TEST_FILENAME)
-	./$(OUTPUT_FILENAME)  $(TEST_FILENAME)
+	./$(OUTPUT_FILENAME) $(TEST_FILENAME)
 
 javaa: proj3.jasm
 	javaa/javaa proj3.jasm
 
 java: proj3.class
 	java proj3
-	
+

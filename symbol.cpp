@@ -9,7 +9,7 @@ variableEntry ve_fn(std::string name, int type)
 	variableEntry ve;
 	ve.name = name;
 	ve.type = type;
-	
+
 	ve.isConst = false;
 	ve.isGlobal = true;
 	ve.isFn = true;
@@ -58,11 +58,11 @@ variableEntry ve_basic_notInit(std::string name, int type, bool isConst)
 	variableEntry ve;
 	ve.name = name;
 	ve.type = type;
-	
+
 	ve.isConst = isConst;
 	ve.isGlobal = true;
 	ve.isFn = false;
-	
+
 	// none of use for project3.
 	ve.isArr = false;
 	ve.arrSize = 1;
@@ -81,7 +81,7 @@ variableEntry ve_arr(std::string name, int type, bool isConst, int arrSize)
 	variableEntry ve;
 	ve.name = name;
 	ve.type = type;
-	
+
 	ve.isConst = isConst;
 	ve.isGlobal = true;
 	ve.isFn = false;
@@ -264,7 +264,7 @@ int symbolTables::editVariable(variableEntry var)
 			if (ve.name == var.name)
 			{
 				if (!ve.isConst)
-				{	
+				{
 					tables[i].variableEntries[j] = var;
 					return 1;
 				}
@@ -278,7 +278,7 @@ int symbolTables::addRetToPreloadFN(int type)
 {
 	tables[tables.size()-2].variableEntries.back().type = type;
 	if (type == T_STRING)
-	{	
+	{
 		tables[tables.size()-2].variableEntries.back().data.stringVal = new char[1];
 		tables[tables.size()-2].variableEntries.back().data.stringVal[0] = '0';
 	}
