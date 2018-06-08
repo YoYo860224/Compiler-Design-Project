@@ -98,3 +98,13 @@ fn main()
 
   	println "Hello World";
 }
+
+/*
+java proj3
+100
+-15
+-104
+100
+94true 3 small.
+Hello World
+*/
