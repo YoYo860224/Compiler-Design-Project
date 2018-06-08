@@ -555,6 +555,8 @@ statement:		ID '=' expression ';'						{
 															}
 				expression	';'								{
 																Trace("Reducing to statement Form KW_PRINT expression	';'\n");
+
+																printTabs();
 																fp << "invokevirtual void java.io.PrintStream.print(";
 																if ($3.tokenType == T_INT)
 																	fp << "int)" << endl;
@@ -569,6 +571,8 @@ statement:		ID '=' expression ';'						{
 															}
 				expression ';'								{ 
 																Trace("Reducing to statement Form KW_PRINTLN expression ';'\n"); 
+
+																printTabs();
 																fp << "invokevirtual void java.io.PrintStream.println(";
 																if ($3.tokenType == T_INT)
 																	fp << "int)" << endl;
@@ -767,7 +771,12 @@ expression:		'-' expression %prec UMINUS					{
 			|	integerExpr									{ Trace("Reducing to expression Form integerExpr\n"); }
 			|	realExpr									{ Trace("Reducing to expression Form realExpr\n"); }
 			|	boolExpr									{ Trace("Reducing to expression Form boolExpr\n"); }
-			|	stringExpr									{ Trace("Reducing to expression Form stringExpr\n"); }
+			|	stringExpr									{ 
+																Trace("Reducing to expression Form stringExpr\n"); 
+
+																printTabs();
+																fp << "ldc \"" << $1.stringVal << "\"" << endl;
+															}
 			|	functionInvoc								{
 																Trace("Reducing to expression Form functionInvoc\n");
 																if ($1.tokenType == T_NONE)
@@ -1146,6 +1155,27 @@ functionInvoc:	ID '(' parameters ')'		{
 													yyerror("function ID not found");
 
 												$$.tokenType = ve.type;
+												
+												printTabs();
+												fp << "invokestatic ";
+												if (ve.type == T_INT)
+													fp << "int ";
+												else if (ve.type == T_BOOL)
+													fp << "bool ";
+
+												fp << outputfileName << "." << ve.name << "(";
+
+												for (int i = 0; i < ve.argSize; i++)
+												{
+													if (ve.argType[i] == T_INT)
+														fp << "int";
+													else if (ve.argType[i] == T_BOOL)
+														fp << "bool";
+
+													if (i != ve.argSize - 1)
+														fp << ", ";
+												}
+												fp << ")" << endl;
 											}
 			;
 
