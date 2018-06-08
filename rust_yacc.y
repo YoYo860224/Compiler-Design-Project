@@ -641,9 +641,11 @@ expression:		'-' expression %prec UMINUS					{
 																	$$.floatVal *= -1;
 																else
 																	yyerror("'-' arg type error.");
-
-																printTabs();
-																fp << "ineg" << endl;
+																if (!nowIsConstant && !symTabs.isNowGlobal()) 
+																{
+																	printTabs();
+																	fp << "ineg" << endl;
+																}
 															}
 			|	expression '+' expression					{
 																Trace("Reducing to expression Form expression '+' expression\n");
@@ -676,8 +678,11 @@ expression:		'-' expression %prec UMINUS					{
 																else
 																	yyerror("'+' arg type error.");
 
-																printTabs();
-																fp << "iadd" << endl;
+																if (!nowIsConstant && !symTabs.isNowGlobal()) 
+																{
+																	printTabs();
+																	fp << "iadd" << endl;
+																}
 															}
 			|	expression '-' expression					{
 																Trace("Reducing to expression Form expression '-' expression\n");
@@ -710,8 +715,11 @@ expression:		'-' expression %prec UMINUS					{
 																else
 																	yyerror("'-' arg type error.");
 
-																printTabs();
-																fp << "isub" << endl;
+																if (!nowIsConstant && !symTabs.isNowGlobal()) 
+																{
+																	printTabs();
+																	fp << "isub" << endl;
+																}
 															}
 			|	expression '*' expression					{
 																Trace("Reducing to expression Form expression '*' expression\n");
@@ -744,8 +752,12 @@ expression:		'-' expression %prec UMINUS					{
 																else
 																	yyerror("'*' arg type error.");
 
-																printTabs();
-																fp << "imul" << endl;
+																
+																if (!nowIsConstant && !symTabs.isNowGlobal()) 
+																{
+																	printTabs();
+																	fp << "imul" << endl;
+																}
 															}
 			|	expression '/' expression					{
 																Trace("Reducing to expression Form expression '/' expression\n");
@@ -778,8 +790,11 @@ expression:		'-' expression %prec UMINUS					{
 																else
 																	yyerror("'/' arg type error.");
 
-																printTabs();
-																fp << "idiv" << endl;
+																if (!nowIsConstant && !symTabs.isNowGlobal()) 
+																{
+																	printTabs();
+																	fp << "idiv" << endl;
+																}
 															}
 			|	expression '%' expression					{
 																Trace("Reducing to expression Form expression '%%' expression\n");
@@ -797,8 +812,11 @@ expression:		'-' expression %prec UMINUS					{
 																else
 																	yyerror("'%' arg type error.");
 
-																printTabs();
-																fp << "irem" << endl;
+																if (!nowIsConstant && !symTabs.isNowGlobal()) 
+																{
+																	printTabs();
+																	fp << "irem" << endl;
+																}
 															}
 			|	'(' expression ')'							{
 																Trace("Reducing to expression Form '(' expression ')'\n");
@@ -924,13 +942,10 @@ expression:		'-' expression %prec UMINUS					{
 integerExpr:	INTEGER										{
 																Trace("Reducing to integerExpr Form INTEGER\n");
 
-																if (!nowIsConstant) 
-																{ 
-																	if (!symTabs.isNowGlobal())
-																	{
-																		printTabs();
-																		fp << "sipush " << $1.intVal << endl;
-																	}
+																if (!nowIsConstant && !symTabs.isNowGlobal()) 
+																{															
+																	printTabs();
+																	fp << "sipush " << $1.intVal << endl;
 																}
 															}
 			;
@@ -944,7 +959,7 @@ boolExpr:		KW_TRUE										{
 																$$.tokenType = T_BOOL;
 																$$.boolVal = true;
 
-																if (!symTabs.isNowGlobal())
+																if (!nowIsConstant && !symTabs.isNowGlobal()) 
 																{
 																	printTabs();
 																	fp << "iconst_1 " << endl;
@@ -955,7 +970,8 @@ boolExpr:		KW_TRUE										{
 
 																$$.tokenType = T_BOOL;
 																$$.boolVal = false;
-																if (!symTabs.isNowGlobal())
+
+																if (!nowIsConstant && !symTabs.isNowGlobal()) 
 																{
 																	printTabs();
 																	fp << "iconst_0 " << endl;
@@ -967,8 +983,11 @@ boolExpr:		KW_TRUE										{
 																$$.tokenType = T_BOOL;
 																$$.boolVal = !$2.boolVal;
 
-																printTabs();
-																fp << "ixor" << endl;
+																if (!nowIsConstant && !symTabs.isNowGlobal()) 
+																{
+																	printTabs();
+																	fp << "ixor" << endl;
+																}
 															}
 			|	expression '>' expression					{
 																Trace("Reducing to boolExpr Form expression '>' expression\n");
@@ -1042,9 +1061,11 @@ boolExpr:		KW_TRUE										{
 
 																$$.tokenType = T_BOOL;
 																$$.boolVal = $1.boolVal && $3.boolVal;
-
-																printTabs();
-																fp << "iand" << endl;
+																if (!nowIsConstant && !symTabs.isNowGlobal()) 
+																{
+																	printTabs();
+																	fp << "iand" << endl;
+																}
 															}
 			|	expression OP_OR expression					{
 																Trace("Reducing to boolExpr Form boolExpr OP_OR boolExpr\n");
@@ -1055,8 +1076,11 @@ boolExpr:		KW_TRUE										{
 																$$.tokenType = T_BOOL;
 																$$.boolVal = $1.boolVal || $3.boolVal;
 
-																printTabs();
-																fp << "ior" << endl;
+																if (!nowIsConstant && !symTabs.isNowGlobal()) 
+																{
+																	printTabs();
+																	fp << "ior" << endl;
+																}
 															}
 			|	expression OP_EQUAL expression				{
 																Trace("Reducing to boolExpr Form expression OP_EQUAL expression\n");
@@ -1195,13 +1219,10 @@ boolExpr:		KW_TRUE										{
 stringExpr:		STRING										{
 																Trace("Reducing to stringExpr Form STRING\n");
 
-																if (!nowIsConstant) 
+																if (!nowIsConstant && !symTabs.isNowGlobal()) 
 																{
-																	if (!symTabs.isNowGlobal())
-																	{
-																		printTabs();
-																		fp << "ldc \"" << $1.stringVal << "\"" << endl;
-																	}
+																	printTabs();
+																	fp << "ldc \"" << $1.stringVal << "\"" << endl;
 																}
 															}
 			;
