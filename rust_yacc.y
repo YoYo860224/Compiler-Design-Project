@@ -35,6 +35,7 @@ symbolTables symTabs = symbolTables();
 
 // Some global for check.
 bool hasReturned = false;
+bool nowIsConstant = false;
 int nowStackIndex = 0;
 int nowLabelIndex = 0;
 
@@ -303,43 +304,53 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 																}
 			;
 
-constDec:		KW_LET ID '=' expression ';'					{
+constDec:		KW_LET ID '=' 									{
+																	nowIsConstant = true;
+																}
+				expression ';'									{
 																	Trace("Reducing to constDec Form KW_LET ID '=' expression ';'\n");
 
-																	variableEntry ve = ve_basic($2.stringVal, $4.tokenType, true);
+																	variableEntry ve = ve_basic($2.stringVal, $5.tokenType, true);
 
-																	if ($4.tokenType == T_INT)
-																		ve.data.intVal = $4.intVal;
-																	else if ($4.tokenType == T_FLOAT)
-																		ve.data.floatVal = $4.floatVal;
-																	else if ($4.tokenType == T_BOOL)
-																		ve.data.boolVal = $4.boolVal;
-																	else if ($4.tokenType == T_STRING)
-																		ve.data.stringVal = $4.stringVal;
+																	if ($5.tokenType == T_INT)
+																		ve.data.intVal = $5.intVal;
+																	else if ($5.tokenType == T_FLOAT)
+																		ve.data.floatVal = $5.floatVal;
+																	else if ($5.tokenType == T_BOOL)
+																		ve.data.boolVal = $5.boolVal;
+																	else if ($5.tokenType == T_STRING)
+																		ve.data.stringVal = $5.stringVal;
 
 																	if (!symTabs.addVariable(ve))
 																		yyerror("Re declaration.");
+
+																	nowIsConstant = false;
 																}
-			|	KW_LET ID ':' type '=' expression ';'			{
+			|	KW_LET ID ':' type 								{
+																	nowIsConstant = true;
+																}
+			'=' expression ';'									{
 																	Trace("Reducing to constDec Form KW_LET ID ':' type '=' expression ';'\n");
 
 																	variableEntry ve = ve_basic($2.stringVal, $4.tokenType, true);
 
-																	if ($4.tokenType == T_FLOAT && $6.tokenType == T_INT)
-																		ve.data.floatVal = $6.intVal;
-																	else if ($4.tokenType != $6.tokenType)
+																	if ($4.tokenType == T_FLOAT && $7.tokenType == T_INT)
+																		ve.data.floatVal = $7.intVal;
+																	else if ($4.tokenType != $7.tokenType)
 																		yyerror("expression is not equal to expression");
-																	else if ($6.tokenType == T_INT)
-																		ve.data.intVal = $6.intVal;
-																	else if ($6.tokenType == T_FLOAT)
-																		ve.data.floatVal = $6.floatVal;
-																	else if ($6.tokenType == T_BOOL)
-																		ve.data.boolVal = $6.boolVal;
-																	else if ($6.tokenType == T_STRING)
-																		ve.data.stringVal = $6.stringVal;
+																	else if ($7.tokenType == T_INT)
+																		ve.data.intVal = $7.intVal;
+																	else if ($7.tokenType == T_FLOAT)
+																		ve.data.floatVal = $7.floatVal;
+																	else if ($7.tokenType == T_BOOL)
+																		ve.data.boolVal = $7.boolVal;
+																	else if ($7.tokenType == T_STRING)
+																		ve.data.stringVal = $7.stringVal;
 
 																	if (!symTabs.addVariable(ve))
 																		yyerror("Re declaration.");
+
+																	nowIsConstant = false;
 																}
 			;
 
@@ -849,7 +860,7 @@ expression:		'-' expression %prec UMINUS					{
 																	else if (ve.type == T_BOOL)
 																		fp << "iconst_" << ve.data.boolVal << endl;
 																	else if (ve.type == T_STRING)
-																		fp << "ldc " << ve.data.stringVal << endl;
+																		fp << "ldc \"" << ve.data.stringVal << "\"" << endl;
 																}
 																else
 																{
@@ -913,10 +924,13 @@ expression:		'-' expression %prec UMINUS					{
 integerExpr:	INTEGER										{
 																Trace("Reducing to integerExpr Form INTEGER\n");
 
-																if (!symTabs.isNowGlobal())
-																{
-																	printTabs();
-																	fp << "sipush " << $1.intVal << endl;
+																if (!nowIsConstant) 
+																{ 
+																	if (!symTabs.isNowGlobal())
+																	{
+																		printTabs();
+																		fp << "sipush " << $1.intVal << endl;
+																	}
 																}
 															}
 			;
@@ -1181,8 +1195,14 @@ boolExpr:		KW_TRUE										{
 stringExpr:		STRING										{
 																Trace("Reducing to stringExpr Form STRING\n");
 
-																printTabs();
-																fp << "ldc \"" << $1.stringVal << "\"" << endl;
+																if (!nowIsConstant) 
+																{
+																	if (!symTabs.isNowGlobal())
+																	{
+																		printTabs();
+																		fp << "ldc \"" << $1.stringVal << "\"" << endl;
+																	}
+																}
 															}
 			;
 
@@ -1298,6 +1318,8 @@ conBoolExpr:	boolExpr			{ Trace("Reducing to conBoolExpr Form boolExpr"); }
 											yyerror("Array no give index");
 										else if (ve.isFn)
 											yyerror("Function no parameters");
+										else if (ve.type != T_INT && ve.type != T_BOOL)
+											yyerror("Not bool expression");
 
 										if (ve.isConst)
 										{
@@ -1306,8 +1328,6 @@ conBoolExpr:	boolExpr			{ Trace("Reducing to conBoolExpr Form boolExpr"); }
 												fp << "sipush " << ve.data.intVal << endl;
 											else if (ve.type == T_BOOL)
 												fp << "iconst_" << ve.data.boolVal << endl;
-											else if (ve.type == T_STRING)
-												fp << "ldc " << ve.data.stringVal << endl;
 										}
 										else
 										{
