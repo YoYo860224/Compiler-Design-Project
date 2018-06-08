@@ -36,6 +36,8 @@ symbolTables symTabs = symbolTables();
 // Some global for check.
 bool hasReturned = false;
 int nowStackIndex = 0;
+int nowLabelIndex = 0;
+
 %}
 
 /* tokens */
@@ -160,14 +162,14 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 																	if (symTabs.isNowGlobal())
 																	{
 																		ve.isGlobal = true;
-																		
+
 																		printTabs();
 																		if (ve.type== T_INT)
 																			fp << "field static int " << ve.name << endl;
 																		else if (ve.type == T_BOOL)
 																			fp << "field static int " << ve.name << endl;
 																	}
-																	else 
+																	else
 																	{
 																		ve.isGlobal = false;
 																		ve.stackIndex = nowStackIndex;
@@ -194,14 +196,14 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 																	if (symTabs.isNowGlobal())
 																	{
 																		ve.isGlobal = true;
-																		
+
 																		printTabs();
 																		if (ve.type == T_INT)
 																			fp << "field static int " << ve.name << " = " << ve.data.intVal << endl;
 																		else if (ve.type == T_BOOL)
 																			fp << "field static int " << ve.name << " = " << ve.data.boolVal << endl;
 																	}
-																	else 
+																	else
 																	{
 																		ve.isGlobal = false;
 																		ve.stackIndex = nowStackIndex;
@@ -209,9 +211,9 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 
 																		printTabs();
 																		if (ve.type == T_INT)
-																			fp << "iload " << ve.stackIndex << endl;
+																			fp << "istore " << ve.stackIndex << endl;
 																		else if (ve.type == T_BOOL)
-																			fp << "iload " << ve.stackIndex << endl;
+																			fp << "istore " << ve.stackIndex << endl;
 																	}
 
 																	if (!symTabs.addVariable(ve))
@@ -234,18 +236,18 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 																		ve.data.boolVal = $7.boolVal;
 																	else if ($7.tokenType == T_STRING)
 																		ve.data.stringVal = $7.stringVal;
-																
+
 																	if (symTabs.isNowGlobal())
 																	{
 																		ve.isGlobal = true;
-																		
+
 																		printTabs();
 																		if (ve.type == T_INT)
 																			fp << "field static int " << ve.name << " = " << ve.data.intVal << endl;
 																		else if (ve.type == T_BOOL)
 																			fp << "field static int " << ve.name << " = " << ve.data.boolVal << endl;
 																	}
-																	else 
+																	else
 																	{
 																		ve.isGlobal = false;
 																		ve.stackIndex = nowStackIndex;
@@ -253,9 +255,9 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 
 																		printTabs();
 																		if (ve.type == T_INT)
-																			fp << "iload " << ve.stackIndex << endl;
+																			fp << "istore " << ve.stackIndex << endl;
 																		else if (ve.type == T_BOOL)
-																			fp << "iload " << ve.stackIndex << endl;
+																			fp << "istore " << ve.stackIndex << endl;
 																	}
 
 																	if (!symTabs.addVariable(ve))
@@ -265,15 +267,15 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 																	Trace("Reducing to varDec Form KW_LET KW_MUT ID ';'\n");
 
 																	variableEntry ve = ve_basic_notInit($3.stringVal, T_INT, false);
-																	
+
 																	if (symTabs.isNowGlobal())
 																	{
 																		ve.isGlobal = true;
-																		
+
 																		printTabs();
 																		fp << "field static int " << ve.name << endl;
 																	}
-																	else 
+																	else
 																	{
 																		ve.isGlobal = false;
 																		ve.stackIndex = nowStackIndex;
@@ -364,7 +366,10 @@ functionDec:	KW_FN ID '('				{
 												variableEntry ve = ve_fn($2.stringVal, T_NONE);
 												if (!symTabs.addVariable(ve))
 													yyerror("Re declaration.");
+
 												symTabs.push_table($2.stringVal);
+												nowStackIndex = 0;
+												hasReturned = false;
 
 												printTabs();
 												fp << "method public static ";
@@ -375,21 +380,21 @@ functionDec:	KW_FN ID '('				{
 													fp << "void main(java.lang.String[])" << endl;
 												else
 												{
-													if (ve.type == T_INT) 
+													if (ve.type == T_INT)
 														fp << "int ";
 													else if (ve.type == T_BOOL)
 														fp << "bool ";
-													
+
 													fp << ve.name;
 													fp << "(";
 
-													for (int i = 0; i < ve.argSize; i++) 
+													for (int i = 0; i < ve.argSize; i++)
 													{
-														if (ve.argType[i] == T_INT) 
+														if (ve.argType[i] == T_INT)
 															fp << "int";
-														else if (ve.argType[i] == T_BOOL) 
+														else if (ve.argType[i] == T_BOOL)
 															fp << "bool";
-														
+
 														if (i != ve.argSize - 1)
 															fp << ", ";
 													}
@@ -424,21 +429,29 @@ formalArgs:		ID ':' type 				{
 												Trace("Reducing to formalArgs Form ID ':' type\n");
 
 												variableEntry ve = ve_basic($1.stringVal, $3.tokenType, false);
+												
+												ve.isGlobal = false;
+												ve.stackIndex = nowStackIndex;
+												nowStackIndex++;
 
 												if (!symTabs.addVariable(ve))
 													yyerror("Re declaration.");
 
 												symTabs.addArgToPreloadFN($3.tokenType);
 											}
-			|	ID ':' type ',' formalArgs	{
+			|	formalArgs ',' ID ':' type 	{
 												Trace("Reducing to formalArgs Form ID ':' type ',' formalArgs\n");
 
-												variableEntry ve = ve_basic($1.stringVal, $3.tokenType, false);
+												variableEntry ve = ve_basic($3.stringVal, $5.tokenType, false);
+
+												ve.isGlobal = false;
+												ve.stackIndex = nowStackIndex;
+												nowStackIndex++;
 
 												if (!symTabs.addVariable(ve))
 													yyerror("Re declaration.");
 
-												symTabs.addArgToPreloadFN($3.tokenType);
+												symTabs.addArgToPreloadFN($5.tokenType);
 											}
 			|	%empty						{ Trace("Reducing to formalArgs Form empty ':' type\n"); }
 			;
@@ -491,7 +504,7 @@ statement:		ID '=' expression ';'						{
 																ve.isInit = true;
 																symTabs.editVariable(ve);
 
-																if (ve.isGlobal) 
+																if (ve.isGlobal)
 																{
 																	printTabs();
 																	fp << "putstatic int " << outputfileName << "." << ve.name << endl;
@@ -499,7 +512,7 @@ statement:		ID '=' expression ';'						{
 																else
 																{
 																	printTabs();
-																	fp << "iload " << ve.stackIndex << endl;
+																	fp << "istore " << ve.stackIndex << endl;
 																}
 															}
 			|	ID '[' expression']' '=' expression ';'		{
@@ -536,10 +549,48 @@ statement:		ID '=' expression ';'						{
 																	symTabs.editVariable(ve);
 																}
 															}
-			|	KW_PRINT expression	';'						{ Trace("Reducing to statement Form KW_PRINT expression	';'\n"); }
-			|	KW_PRINTLN expression ';'					{ Trace("Reducing to statement Form KW_PRINTLN expression ';'\n"); }
-			|	KW_RETURN expression ';'					{ Trace("Reducing to statement Form KW_RETURN expression ';'\n"); }
-			|	KW_RETURN ';'								{ Trace("Reducing to statement Form KW_RETURN ';'\n"); }
+			|	KW_PRINT 									{
+																printTabs();
+																fp << "getstatic java.io.PrintStream java.lang.System.out" << endl;
+															}
+				expression	';'								{
+																Trace("Reducing to statement Form KW_PRINT expression	';'\n");
+																fp << "invokevirtual void java.io.PrintStream.print(";
+																if ($3.tokenType == T_INT)
+																	fp << "int)" << endl;
+																else if ($3.tokenType == T_BOOL)
+																	fp << "boolean)" << endl;
+																else if ($3.tokenType == T_STRING)
+																	fp << "java.lang.String)" << endl;
+															}
+			|	KW_PRINTLN 									{
+																printTabs();
+																fp << "getstatic java.io.PrintStream java.lang.System.out" << endl;
+															}
+				expression ';'								{ 
+																Trace("Reducing to statement Form KW_PRINTLN expression ';'\n"); 
+																fp << "invokevirtual void java.io.PrintStream.println(";
+																if ($3.tokenType == T_INT)
+																	fp << "int)" << endl;
+																else if ($3.tokenType == T_BOOL)
+																	fp << "boolean)" << endl;
+																else if ($3.tokenType == T_STRING)
+																	fp << "java.lang.String)" << endl;
+															}
+			|	KW_RETURN expression ';'					{ 
+																Trace("Reducing to statement Form KW_RETURN expression ';'\n");
+																
+																hasReturned = true;
+																printTabs();
+																fp << "ireturn" << endl;
+															}
+			|	KW_RETURN ';'								{ 
+																Trace("Reducing to statement Form KW_RETURN ';'\n"); 
+																
+																hasReturned = true;
+																printTabs();
+																fp << "return" << endl;
+															}
 			|	block										{ Trace("Reducing to statement Form block\n"); }
 			|	conditional									{ Trace("Reducing to statement Form conditional\n"); }
 			|	loop										{ Trace("Reducing to statement Form loop\n"); }
@@ -555,6 +606,9 @@ expression:		'-' expression %prec UMINUS					{
 																	$$.floatVal *= -1;
 																else
 																	yyerror("'-' arg type error.");
+
+																printTabs();
+																fp << "ineg" << endl;
 															}
 			|	expression '+' expression					{
 																Trace("Reducing to expression Form expression '+' expression\n");
@@ -585,6 +639,9 @@ expression:		'-' expression %prec UMINUS					{
 																}
 																else
 																	yyerror("'+' arg type error.");
+
+																printTabs();
+																fp << "iadd" << endl;
 															}
 			|	expression '-' expression					{
 																Trace("Reducing to expression Form expression '-' expression\n");
@@ -615,6 +672,9 @@ expression:		'-' expression %prec UMINUS					{
 																}
 																else
 																	yyerror("'-' arg type error.");
+
+																printTabs();
+																fp << "isub" << endl;
 															}
 			|	expression '*' expression					{
 																Trace("Reducing to expression Form expression '*' expression\n");
@@ -645,6 +705,9 @@ expression:		'-' expression %prec UMINUS					{
 																}
 																else
 																	yyerror("'*' arg type error.");
+
+																printTabs();
+																fp << "imul" << endl;
 															}
 			|	expression '/' expression					{
 																Trace("Reducing to expression Form expression '/' expression\n");
@@ -675,6 +738,9 @@ expression:		'-' expression %prec UMINUS					{
 																}
 																else
 																	yyerror("'/' arg type error.");
+
+																printTabs();
+																fp << "idiv" << endl;
 															}
 			|	expression '%' expression					{
 																Trace("Reducing to expression Form expression '%%' expression\n");
@@ -690,6 +756,9 @@ expression:		'-' expression %prec UMINUS					{
 																}
 																else
 																	yyerror("'%' arg type error.");
+
+																printTabs();
+																fp << "irem" << endl;
 															}
 			|	'(' expression ')'							{
 																Trace("Reducing to expression Form '(' expression ')'\n");
@@ -740,6 +809,31 @@ expression:		'-' expression %prec UMINUS					{
 																		$$.stringVal = ve.data.stringVal;
 																	}
 																}
+
+																if (ve.isConst)
+																{
+																	printTabs();
+																	if (ve.type == T_INT)
+																		fp << "sipush " << ve.data.intVal << endl;
+																	else if (ve.type == T_BOOL)
+																		fp << "iconst_" << ve.data.boolVal << endl;
+																	else if (ve.type == T_STRING)
+																		fp << "ldc " << ve.data.stringVal << endl;
+																}
+																else
+																{
+																	if (ve.isGlobal)
+																	{
+																		printTabs();
+																		fp << "getstatic int " << outputfileName << "." << ve.name << endl;
+																	}
+																	else
+																	{
+																		printTabs();
+																		fp << "iload " << ve.stackIndex << endl;
+																	}
+																}
+
 															}
 			|	ID '[' expression ']'						{
 																Trace("Reducing to expression Form ID '[' expression ']'\n");
@@ -783,7 +877,15 @@ expression:		'-' expression %prec UMINUS					{
 															}
 			;
 
-integerExpr:	INTEGER										{ Trace("Reducing to integerExpr Form INTEGER\n"); }
+integerExpr:	INTEGER										{
+																Trace("Reducing to integerExpr Form INTEGER\n");
+
+																if (!symTabs.isNowGlobal())
+																{
+																	printTabs();
+																	fp << "sipush " << $1.intVal << endl;
+																}
+															}
 			;
 
 realExpr:		REAL										{ Trace("Reducing to realExpr Form REAL\n"); }
@@ -793,16 +895,30 @@ boolExpr:		KW_TRUE										{
 																Trace("Reducing to boolExpr Form KW_TRUE\n");
 																$$.tokenType = T_BOOL;
 																$$.boolVal = true;
+
+																if (!symTabs.isNowGlobal())
+																{
+																	printTabs();
+																	fp << "iconst_1 " << endl;
+																}
 															}
 			|	KW_FALSE									{
 																Trace("Reducing to boolExpr Form KW_FALSE\n");
 																$$.tokenType = T_BOOL;
 																$$.boolVal = false;
+																if (!symTabs.isNowGlobal())
+																{
+																	printTabs();
+																	fp << "iconst_0 " << endl;
+																}
 															}
 			|	'!' expression								{
 																Trace("Reducing to boolExpr Form '!' expression\n");
 																$$.tokenType = T_BOOL;
 																$$.boolVal = !$2.boolVal;
+
+																printTabs();
+																fp << "ixor" << endl;
 															}
 			|	expression '>' expression					{
 																Trace("Reducing to boolExpr Form expression '>' expression\n");
@@ -820,6 +936,20 @@ boolExpr:		KW_TRUE										{
 																	$$.boolVal = $1.stringVal > $3.stringVal;
 																else
 																	yyerror("'>' arg type error.");
+
+																printTabs();
+																fp << "isub" << endl;
+																printTabs();
+																fp << "ifgt " << "L" << nowLabelIndex << endl;
+																printTabs();
+																fp << "iconst_0" << endl;
+																printTabs();
+																fp << "goto " << "L" << nowLabelIndex + 1 << endl;
+																fp << "L" << nowLabelIndex << ":" << endl;
+																printTabs();
+																fp << "iconst_1" << endl;
+																fp << "L" << nowLabelIndex + 2 << ":" << endl;
+																nowLabelIndex += 2;
 															}
 			|	expression '<' expression					{
 																Trace("Reducing to boolExpr Form expression '<' expression\n");
@@ -837,6 +967,20 @@ boolExpr:		KW_TRUE										{
 																	$$.boolVal = $1.stringVal < $3.stringVal;
 																else
 																	yyerror("'<' arg type error.");
+
+																printTabs();
+																fp << "isub" << endl;
+																printTabs();
+																fp << "iflt " << "L" << nowLabelIndex << endl;
+																printTabs();
+																fp << "iconst_0" << endl;
+																printTabs();
+																fp << "goto " << "L" << nowLabelIndex + 1 << endl;
+																fp << "L" << nowLabelIndex << ":" << endl;
+																printTabs();
+																fp << "iconst_1" << endl;
+																fp << "L" << nowLabelIndex + 2 << ":" << endl;
+																nowLabelIndex += 2;
 															}
 			|	expression OP_AND expression				{
 																Trace("Reducing to boolExpr Form boolExpr OP_AND boolExpr\n");
@@ -846,6 +990,9 @@ boolExpr:		KW_TRUE										{
 
 																$$.tokenType = T_BOOL;
 																$$.boolVal = $1.boolVal && $3.boolVal;
+
+																printTabs();
+																fp << "iand" << endl;
 															}
 			|	expression OP_OR expression					{
 																Trace("Reducing to boolExpr Form boolExpr OP_OR boolExpr\n");
@@ -855,6 +1002,9 @@ boolExpr:		KW_TRUE										{
 
 																$$.tokenType = T_BOOL;
 																$$.boolVal = $1.boolVal || $3.boolVal;
+
+																printTabs();
+																fp << "ior" << endl;
 															}
 			|	expression OP_EQUAL expression				{
 																Trace("Reducing to boolExpr Form expression OP_EQUAL expression\n");
@@ -874,6 +1024,20 @@ boolExpr:		KW_TRUE										{
 																	$$.boolVal = $1.boolVal == $3.boolVal;
 																else
 																	yyerror("'==' arg type error.");
+
+																printTabs();
+																fp << "isub" << endl;
+																printTabs();
+																fp << "ifeq " << "L" << nowLabelIndex << endl;
+																printTabs();
+																fp << "iconst_0" << endl;
+																printTabs();
+																fp << "goto " << "L" << nowLabelIndex + 1 << endl;
+																fp << "L" << nowLabelIndex << ":" << endl;
+																printTabs();
+																fp << "iconst_1" << endl;
+																fp << "L" << nowLabelIndex + 2 << ":" << endl;
+																nowLabelIndex += 2;
 															}
 			|	expression OP_NOT_EQUAL expression			{
 																Trace("Reducing to boolExpr Form expression OP_NOT_EQUAL expression\n");
@@ -893,6 +1057,20 @@ boolExpr:		KW_TRUE										{
 																	$$.boolVal = $1.boolVal != $3.boolVal;
 																else
 																	yyerror("'!=' arg type error.");
+
+																printTabs();
+																fp << "isub" << endl;
+																printTabs();
+																fp << "ifnq " << "L" << nowLabelIndex << endl;
+																printTabs();
+																fp << "iconst_0" << endl;
+																printTabs();
+																fp << "goto " << "L" << nowLabelIndex + 1 << endl;
+																fp << "L" << nowLabelIndex << ":" << endl;
+																printTabs();
+																fp << "iconst_1" << endl;
+																fp << "L" << nowLabelIndex + 2 << ":" << endl;
+																nowLabelIndex += 2;
 															}
 			|	expression OP_GREAT_EQUAL expression		{
 																Trace("Reducing to boolExpr Form expression OP_GREAT_EQUAL expression\n");
@@ -910,6 +1088,20 @@ boolExpr:		KW_TRUE										{
 																	$$.boolVal = $1.stringVal >= $3.stringVal;
 																else
 																	yyerror("'>=' arg type error.");
+
+																printTabs();
+																fp << "isub" << endl;
+																printTabs();
+																fp << "ifge " << "L" << nowLabelIndex << endl;
+																printTabs();
+																fp << "iconst_0" << endl;
+																printTabs();
+																fp << "goto " << "L" << nowLabelIndex + 1 << endl;
+																fp << "L" << nowLabelIndex << ":" << endl;
+																printTabs();
+																fp << "iconst_1" << endl;
+																fp << "L" << nowLabelIndex + 2 << ":" << endl;
+																nowLabelIndex += 2;
 															}
 			|	expression OP_LESS_EQUAL expression			{
 																Trace("Reducing to boolExpr Form expression OP_LESS_EQUAL expression\n");
@@ -927,6 +1119,20 @@ boolExpr:		KW_TRUE										{
 																	$$.boolVal = $1.stringVal <= $3.stringVal;
 																else
 																	yyerror("'<=' arg type error.");
+
+																printTabs();
+																fp << "isub" << endl;
+																printTabs();
+																fp << "ifle " << "L" << nowLabelIndex << endl;
+																printTabs();
+																fp << "iconst_0" << endl;
+																printTabs();
+																fp << "goto " << "L" << nowLabelIndex + 1 << endl;
+																fp << "L" << nowLabelIndex << ":" << endl;
+																printTabs();
+																fp << "iconst_1" << endl;
+																fp << "L" << nowLabelIndex + 2 << ":" << endl;
+																nowLabelIndex += 2;
 															}
 			;
 
@@ -983,7 +1189,7 @@ void printTabs()
 int main(int argc, char *argv[])
 {
     // Open srcfile.
-	if (argc != 2 && argc !=3) 
+	if (argc != 2 && argc !=3)
 	{
         fprintf(stderr, "Usage: rust.exe <filename>\n");
 		fprintf(stderr, "Usage: rust.exe <filename> <outputfileName>\n");
@@ -991,7 +1197,7 @@ int main(int argc, char *argv[])
     }
 
 	yyin = fopen(argv[1], "r");
-	
+
 	if (argc == 3)
 		outputfileName = argv[2];
 
