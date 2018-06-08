@@ -25,7 +25,7 @@ lex.yy.cpp: $(LEX_FILENAME)
 	$(LEX) -o lex.yy.cpp $(LEX_FILENAME)
 
 clean:
-	rm -f lex.yy.cpp y.tab.cpp y.tab.h  *.o *.exe *.class *.jasm
+	rm -f lex.yy.cpp y.tab.cpp y.tab.h  *.o *.exe
 
 allRun: doCompiler javaa java
 

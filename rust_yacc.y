@@ -25,6 +25,7 @@ extern "C" {
 using namespace std;
 
 // Declare for file.
+string outputfileName = "proj3";
 fstream fp;
 int nowTabs = 0;
 void printTabs();
@@ -489,6 +490,17 @@ statement:		ID '=' expression ';'						{
 
 																ve.isInit = true;
 																symTabs.editVariable(ve);
+
+																if (ve.isGlobal) 
+																{
+																	printTabs();
+																	fp << "putstatic int " << outputfileName << "." << ve.name << endl;
+																}
+																else
+																{
+																	printTabs();
+																	fp << "iload " << ve.stackIndex << endl;
+																}
 															}
 			|	ID '[' expression']' '=' expression ';'		{
 																Trace("Reducing to statement Form ID '[' expression']' '=' expression ';'\n");
@@ -980,7 +992,6 @@ int main(int argc, char *argv[])
 
 	yyin = fopen(argv[1], "r");
 	
-	string outputfileName = "proj3";
 	if (argc == 3)
 		outputfileName = argv[2];
 
