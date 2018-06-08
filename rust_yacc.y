@@ -1399,8 +1399,8 @@ int main(int argc, char *argv[])
     // Open srcfile.
 	if (argc != 2 && argc !=3)
 	{
-        fprintf(stderr, "Usage: rust.exe <filename>\n");
-		fprintf(stderr, "Usage: rust.exe <filename> <outputfileName>\n");
+        fprintf(stderr, "Usage: _rust.exe <filename>\n");
+		fprintf(stderr, "Usage: _rust.exe <filename> <outputfileName>\n");
         exit(-1);
     }
 

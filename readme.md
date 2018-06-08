@@ -15,6 +15,27 @@ Compilier for Rust_.
         * Add **return**, and assign value to **yylval**:
             * Some string need return label that declare in yacc.
             * Do like: return **OP_EQUAL**, not return **"=="**.
+* project3
+    * I change to use argc argv.
+    * Scanner was not changed.
+    * In symbolTable
+        * Need check ve isGlobal.
+        * Keep function argument info.
+    * In parser
+        * Use **fstream** to write file to ***.jasm**.
+        * Need check hasReturned, nowIsConstant.
+        * Need keep nowStackIndex, nowLabelIndex.
+        * I add whileKeep type to KE_WHILE to keep while labelIndex.
+    * special
+        * I keep labelIndex for mutilple stament.
+        * Add "nop" to *.jasm to keep from syntex error of double label like
+        ```
+            ...                     ...
+            L1:         --->        L1:
+            L2:         --->            nop
+            ...         --->        L2:
+            ...                     ...
+        ```
 
 ## Debug
 ``` c
@@ -29,8 +50,12 @@ $ make
 
 ## Excute
 ``` bash
-$ ./rust.exe < "yourfile"   // Compiler yourfile.
-$ make run                  // Compiler test/aMy.rust.
+$ _rust.exe <filename>                      # Compiler yourfile to proj3.jasm.
+$ _rust.exe <filename> <outputfileName>     # Compiler yourfile to <outputfileName>.jasm.
+$ javaa/javaa <outputfileName>.jasm         # Compiler jasm to class.
+$ java <outputfileName>                     # Run by java, should install java.
+
+$ make allRun                               # Do all to proj3.jasm.
 ```
 
 ## Clean excess file
