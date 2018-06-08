@@ -35,6 +35,6 @@ doCompiler: $(TEST_FILENAME)
 javaa: proj3.jasm
 	javaa/javaa proj3.jasm
 
-java: javaa/proj3.class
+java: proj3.class
 	java proj3
 	

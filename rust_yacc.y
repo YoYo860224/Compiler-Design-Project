@@ -1219,6 +1219,9 @@ ifStament:		KW_IF '(' boolExpr ')' 				{
 														fp << "L" << topElseLabel.back() << ":" << endl;
 
 														topElseLabel.pop_back();
+
+														printTabs();
+														fp << "nop" <<endl;
 													}
 			;
 
