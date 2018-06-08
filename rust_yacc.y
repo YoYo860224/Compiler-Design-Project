@@ -1301,6 +1301,9 @@ elseStament:	KW_ELSE 							{
 														topElseLabel.push_back(nowLabelIndex);
 
 														nowLabelIndex++;
+
+														printTabs();
+														fp << "nop" <<endl;
 													}
 				block 								{ Trace("Reducing to elseStament Form KW_ELSE block\n"); }
 			|	%empty								{ Trace("Reducing to elseStament Form empty\n"); }
@@ -1324,6 +1327,8 @@ loop:			KW_WHILE			{
 										printTabs();
 										fp << "goto " << "L" << $1.beginLabel << endl;
 										fp << "L" << $1.exitLabel << ":" << endl;
+										printTabs();
+										fp << "nop" <<endl;
 									}
 			;
 

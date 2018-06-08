@@ -76,6 +76,21 @@ fn main()
 		println -a;
 	}
 
+	while(false)
+	{
+		if(false)
+		{
+			print 1;
+		}
+		else
+		{
+			while(false)
+			{
+				print 2;
+			}
+		}
+	}
+
 	print e1;
 	print e2;
 	print e3;
