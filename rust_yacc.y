@@ -156,6 +156,23 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 
 																	variableEntry ve = ve_basic_notInit($3.stringVal, $5.tokenType, false);
 
+																	if (symTabs.isNowGlobal())
+																	{
+																		ve.isGlobal = true;
+																		
+																		printTabs();
+																		if (ve.type== T_INT)
+																			fp << "field static integer " << ve.name << endl;
+																		else if (ve.type == T_BOOL)
+																			fp << "field static integer " << ve.name << endl;
+																	}
+																	else 
+																	{
+																		ve.isGlobal = false;
+																		ve.stackIndex = nowStackIndex;
+																		nowStackIndex++;
+																	}
+
 																	if (!symTabs.addVariable(ve))
 																		yyerror("Re declaration.");
 																}
@@ -172,6 +189,29 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 																		ve.data.boolVal = $5.boolVal;
 																	else if ($5.tokenType == T_STRING)
 																		ve.data.stringVal = $5.stringVal;
+
+																	if (symTabs.isNowGlobal())
+																	{
+																		ve.isGlobal = true;
+																		
+																		printTabs();
+																		if (ve.type == T_INT)
+																			fp << "field static integer " << ve.name << " = " << ve.data.intVal << endl;
+																		else if (ve.type == T_BOOL)
+																			fp << "field static integer " << ve.name << " = " << ve.data.boolVal << endl;
+																	}
+																	else 
+																	{
+																		ve.isGlobal = false;
+																		ve.stackIndex = nowStackIndex;
+																		nowStackIndex++;
+
+																		printTabs();
+																		if (ve.type == T_INT)
+																			fp << "iload " << ve.stackIndex << endl;
+																		else if (ve.type == T_BOOL)
+																			fp << "iload " << ve.stackIndex << endl;
+																	}
 
 																	if (!symTabs.addVariable(ve))
 																		yyerror("Re declaration.");
@@ -194,13 +234,50 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 																	else if ($7.tokenType == T_STRING)
 																		ve.data.stringVal = $7.stringVal;
 																
+																	if (symTabs.isNowGlobal())
+																	{
+																		ve.isGlobal = true;
+																		
+																		printTabs();
+																		if (ve.type == T_INT)
+																			fp << "field static integer " << ve.name << " = " << ve.data.intVal << endl;
+																		else if (ve.type == T_BOOL)
+																			fp << "field static integer " << ve.name << " = " << ve.data.boolVal << endl;
+																	}
+																	else 
+																	{
+																		ve.isGlobal = false;
+																		ve.stackIndex = nowStackIndex;
+																		nowStackIndex++;
+
+																		printTabs();
+																		if (ve.type == T_INT)
+																			fp << "iload " << ve.stackIndex << endl;
+																		else if (ve.type == T_BOOL)
+																			fp << "iload " << ve.stackIndex << endl;
+																	}
+
 																	if (!symTabs.addVariable(ve))
 																		yyerror("Re declaration.");
 																}
 			|	KW_LET KW_MUT ID ';'							{
 																	Trace("Reducing to varDec Form KW_LET KW_MUT ID ';'\n");
 
-																	variableEntry ve = ve_basic_notInit($3.stringVal, T_NONE, false);
+																	variableEntry ve = ve_basic_notInit($3.stringVal, T_INT, false);
+																	
+																	if (symTabs.isNowGlobal())
+																	{
+																		ve.isGlobal = true;
+																		
+																		printTabs();
+																		fp << "field static integer " << ve.name << endl;
+																	}
+																	else 
+																	{
+																		ve.isGlobal = false;
+																		ve.stackIndex = nowStackIndex;
+																		nowStackIndex++;
+																	}
 
 																	if (!symTabs.addVariable(ve))
 																		yyerror("Re declaration.");

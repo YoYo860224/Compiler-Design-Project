@@ -7,9 +7,9 @@ let mut c;
 let mut a = 5;
     
 // function declaration
-fn add(a:int, b:bool) -> int
+fn add(a:int, b:int) -> int
 {
-  //return a+b;
+  return a + b;
 }
     
 // main function
