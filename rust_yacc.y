@@ -986,6 +986,8 @@ boolExpr:		KW_TRUE										{
 																if (!nowIsConstant && !symTabs.isNowGlobal()) 
 																{
 																	printTabs();
+																	fp << "iconst_1" << endl;
+																	printTabs();
 																	fp << "ixor" << endl;
 																}
 															}

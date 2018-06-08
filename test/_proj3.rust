@@ -91,6 +91,11 @@ fn main()
 		}
 	}
 
+	while(!true)
+	{
+		print "GG";
+	}
+
 	print e1;
 	print e2;
 	print e3;
