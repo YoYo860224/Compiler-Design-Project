@@ -429,7 +429,7 @@ formalArgs:		ID ':' type 				{
 												Trace("Reducing to formalArgs Form ID ':' type\n");
 
 												variableEntry ve = ve_basic($1.stringVal, $3.tokenType, false);
-												
+
 												ve.isGlobal = false;
 												ve.stackIndex = nowStackIndex;
 												nowStackIndex++;
@@ -569,8 +569,8 @@ statement:		ID '=' expression ';'						{
 																printTabs();
 																fp << "getstatic java.io.PrintStream java.lang.System.out" << endl;
 															}
-				expression ';'								{ 
-																Trace("Reducing to statement Form KW_PRINTLN expression ';'\n"); 
+				expression ';'								{
+																Trace("Reducing to statement Form KW_PRINTLN expression ';'\n");
 
 																printTabs();
 																fp << "invokevirtual void java.io.PrintStream.println(";
@@ -581,16 +581,16 @@ statement:		ID '=' expression ';'						{
 																else if ($3.tokenType == T_STRING)
 																	fp << "java.lang.String)" << endl;
 															}
-			|	KW_RETURN expression ';'					{ 
+			|	KW_RETURN expression ';'					{
 																Trace("Reducing to statement Form KW_RETURN expression ';'\n");
-																
+
 																hasReturned = true;
 																printTabs();
 																fp << "ireturn" << endl;
 															}
-			|	KW_RETURN ';'								{ 
-																Trace("Reducing to statement Form KW_RETURN ';'\n"); 
-																
+			|	KW_RETURN ';'								{
+																Trace("Reducing to statement Form KW_RETURN ';'\n");
+
 																hasReturned = true;
 																printTabs();
 																fp << "return" << endl;
@@ -771,12 +771,7 @@ expression:		'-' expression %prec UMINUS					{
 			|	integerExpr									{ Trace("Reducing to expression Form integerExpr\n"); }
 			|	realExpr									{ Trace("Reducing to expression Form realExpr\n"); }
 			|	boolExpr									{ Trace("Reducing to expression Form boolExpr\n"); }
-			|	stringExpr									{ 
-																Trace("Reducing to expression Form stringExpr\n"); 
-
-																printTabs();
-																fp << "ldc \"" << $1.stringVal << "\"" << endl;
-															}
+			|	stringExpr									{ Trace("Reducing to expression Form stringExpr\n"); }
 			|	functionInvoc								{
 																Trace("Reducing to expression Form functionInvoc\n");
 																if ($1.tokenType == T_NONE)
@@ -1145,7 +1140,12 @@ boolExpr:		KW_TRUE										{
 															}
 			;
 
-stringExpr:		STRING										{ Trace("Reducing to stringExpr Form STRING\n"); }
+stringExpr:		STRING										{
+																Trace("Reducing to stringExpr Form STRING\n");
+
+																printTabs();
+																fp << "ldc \"" << $1.stringVal << "\"" << endl;
+															}
 			;
 
 functionInvoc:	ID '(' parameters ')'		{
@@ -1155,7 +1155,7 @@ functionInvoc:	ID '(' parameters ')'		{
 													yyerror("function ID not found");
 
 												$$.tokenType = ve.type;
-												
+
 												printTabs();
 												fp << "invokestatic ";
 												if (ve.type == T_INT)
