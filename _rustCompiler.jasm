@@ -1,6 +1,8 @@
 class proj3
 {
-	method public static int add(bool, int)
+	field static integer c
+	field static integer a = 5
+	method public static int add(int, int)
 	max_stack 15
 	max_locals 15
 	{
