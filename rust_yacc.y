@@ -33,8 +33,8 @@ void printTabs();
 symbolTables symTabs = symbolTables();
 
 // Some global for check.
-bool hasReturned = 0;
-
+bool hasReturned = false;
+int nowStackIndex = 0;
 %}
 
 /* tokens */
@@ -135,22 +135,18 @@ declaration:	varDec						{ Trace("Reducing to declaration Form varDec\n"); }
 
 type:			KW_INT						{
 												Trace("Reducing to type Form KW_INT\n");
-
 												$$.tokenType = T_INT;
 											}
 			|	KW_FLOAT					{
 												Trace("Reducing to type Form KW_FLOAT\n");
-
 												$$.tokenType = T_FLOAT;
 											}
 			|	KW_BOOL						{
 												Trace("Reducing to type Form KW_BOOL\n");
-
 												$$.tokenType = T_BOOL;
 											}
 			|	KW_STR						{
 												Trace("Reducing to type Form KW_STR\n");
-
 												$$.tokenType = T_STRING;
 											}
 			;
@@ -197,7 +193,7 @@ varDec:			KW_LET KW_MUT ID ':' type ';'					{
 																		ve.data.boolVal = $7.boolVal;
 																	else if ($7.tokenType == T_STRING)
 																		ve.data.stringVal = $7.stringVal;
-
+																
 																	if (!symTabs.addVariable(ve))
 																		yyerror("Re declaration.");
 																}

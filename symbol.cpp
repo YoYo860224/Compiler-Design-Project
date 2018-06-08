@@ -9,12 +9,18 @@ variableEntry ve_fn(std::string name, int type)
 	variableEntry ve;
 	ve.name = name;
 	ve.type = type;
-	ve.isInit = true;
+	
 	ve.isConst = false;
-	ve.isArr = false;
+	ve.isGlobal = true;
 	ve.isFn = true;
-	ve.arrSize = 1;
+
 	ve.argSize = 0;
+	ve.data.intVal = 0;
+
+	// none of use for project3.
+	ve.isArr = false;
+	ve.arrSize = 1;
+	ve.isInit = true;
 	ve.data.intVal = 0;
 	if (type == T_STRING)
 	{
@@ -29,12 +35,15 @@ variableEntry ve_basic(std::string name, int type, bool isConst)
 	variableEntry ve;
 	ve.name = name;
 	ve.type = type;
-	ve.isInit = true;
+
 	ve.isConst = isConst;
-	ve.isArr = false;
+	ve.isGlobal = true;
 	ve.isFn = false;
+
+	// none of use for project3.
+	ve.isArr = false;
 	ve.arrSize = 1;
-	ve.argSize = 0;
+	ve.isInit = true;
 	ve.data.intVal = 0;
 	if (type == T_STRING)
 	{
@@ -49,12 +58,15 @@ variableEntry ve_basic_notInit(std::string name, int type, bool isConst)
 	variableEntry ve;
 	ve.name = name;
 	ve.type = type;
-	ve.isInit = false;
+	
 	ve.isConst = isConst;
-	ve.isArr = false;
+	ve.isGlobal = true;
 	ve.isFn = false;
+	
+	// none of use for project3.
+	ve.isArr = false;
 	ve.arrSize = 1;
-	ve.argSize = 0;
+	ve.isInit = false;
 	ve.data.intVal = 0;
 	if (type == T_STRING)
 	{
@@ -69,13 +81,16 @@ variableEntry ve_arr(std::string name, int type, bool isConst, int arrSize)
 	variableEntry ve;
 	ve.name = name;
 	ve.type = type;
-	ve.isInit = true;
+	
 	ve.isConst = isConst;
-	ve.isArr = true;
+	ve.isGlobal = true;
 	ve.isFn = false;
+
+	// none of use for project3.
+	ve.isArr = true;
 	ve.arrSize = arrSize;
+	ve.isInit = true;
 	ve.data.intVal = 0;
-	ve.argSize = 0;
 	if (type == T_STRING)
 	{
 		ve.data.stringVal = new char[1];
@@ -98,11 +113,6 @@ int symbolTables::push_table(std::string name)
 	st.scopeName = name;
 
 	tables.push_back(st);
-}
-
-int symbolTables::update_tableName(std::string name)
-{
-	tables.back().scopeName = name;
 }
 
 int symbolTables::pop_table()
@@ -224,6 +234,14 @@ int symbolTables::show_topTable()
 		}
 	}
 	std::cout << "==============================================" << "\n";
+}
+
+bool symbolTables::isNowGlobal()
+{
+	if (tables.size() == 1)
+		return true;
+	else
+		return false;
 }
 
 int symbolTables::addVariable(variableEntry var)

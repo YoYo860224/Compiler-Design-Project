@@ -17,7 +17,7 @@ enum TYPE
 	T_404
 };
 
-typedef union{
+typedef union {
 	int intVal;
 	float floatVal;
 	bool boolVal;
@@ -29,20 +29,26 @@ typedef union{
 	char** stringArr;
 } variableData;
 
-typedef struct variableEntry{
+typedef struct variableEntry {
 	std::string name;
 	int type;
-	bool isInit;
-	bool isConst;
-	bool isArr;
-	bool isFn;
-	int arrSize;
-	int argSize;
-	int argType[15];
-	int stackIndex;
+
+	bool isConst;		// if constant, use value in data.
 	union {
 		variableData data;
 	};
+
+	bool isGlobal;		// if not global variable, use stack index.
+	int stackIndex;		
+
+	bool isFn;			// if function, need argument.
+	int argSize;
+	int argType[15];
+
+	bool isInit;		// none of use for project3.
+
+	bool isArr;			// none of use for project3.
+	int arrSize;
 } variableEntry;
 
 // Some make variableEntry methon.
@@ -52,7 +58,7 @@ variableEntry ve_basic_notInit(std::string name, int type, bool isConst);
 variableEntry ve_arr(std::string name, int type, bool isConst, int arrSize);
 
 // Per table, store their name and variableEntry array.
-typedef struct{
+typedef struct {
 	std::string scopeName;
 	std::vector<variableEntry> variableEntries;
 } symbolTable;
@@ -60,14 +66,16 @@ typedef struct{
 class symbolTables
 {
 private:
+	int nowFunctions = 0;
 	std::vector<symbolTable> tables;					// stack of symbolTable
 public:
 	symbolTables();
 
 	int push_table(std::string name);					// Push table.
-	int update_tableName(std::string name);				// Ppdate top table name.
 	int pop_table();									// Pop out and show.
 	int show_topTable();								// Show top table.
+
+	bool isNowGlobal();									// Check is now global.
 
 	int addVariable(variableEntry var);					// Add variableEntry to top table.
 	int editVariable(variableEntry var);				// Edit same name variableEntry in top table.
