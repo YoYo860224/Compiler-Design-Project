@@ -38,6 +38,9 @@ bool hasReturned = false;
 int nowStackIndex = 0;
 int nowLabelIndex = 0;
 
+vector<int> topElseLabel;
+vector<int> topIfLable;
+
 %}
 
 /* tokens */
@@ -52,6 +55,13 @@ int nowLabelIndex = 0;
 			char* stringVal;
 		};
 	} Token;
+}
+
+%union{
+	struct{
+		int ifLabel;
+		int elseLabel;
+	} StamentLabel;
 }
 
 %token OP_INCREMENT
@@ -72,14 +82,12 @@ int nowLabelIndex = 0;
 %token KW_CHAR
 %token KW_CONTINUE
 %token KW_DO
-%token KW_ELSE
 %token KW_ENUM
 %token KW_EXTERN
 %token KW_FALSE
 %token KW_FLOAT
 %token KW_FOR
 %token KW_FN
-%token KW_IF
 %token KW_IN
 %token KW_INT
 %token KW_LET
@@ -97,7 +105,12 @@ int nowLabelIndex = 0;
 %token KW_TRUE
 %token KW_USE
 %token KW_WHERE
-%token KW_WHILE
+
+%token <StamentLabel> KW_IF
+%token <StamentLabel> KW_ELSE
+%token <StamentLabel> KW_WHILE
+
+%type <StamentLabel> ifStament elseStament loop
 
 %token <Token> INTEGER
 %token <Token> STRING
@@ -596,7 +609,7 @@ statement:		ID '=' expression ';'						{
 																fp << "return" << endl;
 															}
 			|	block										{ Trace("Reducing to statement Form block\n"); }
-			|	conditional									{ Trace("Reducing to statement Form conditional\n"); }
+			|	ifStament									{ Trace("Reducing to statement Form ifStament\n"); }
 			|	loop										{ Trace("Reducing to statement Form loop\n"); }
 			|	functionInvoc								{ Trace("Reducing to statement Form functionInvoc\n"); }
 			;
@@ -952,7 +965,7 @@ boolExpr:		KW_TRUE										{
 																fp << "L" << nowLabelIndex << ":" << endl;
 																printTabs();
 																fp << "iconst_1" << endl;
-																fp << "L" << nowLabelIndex + 2 << ":" << endl;
+																fp << "L" << nowLabelIndex + 1 << ":" << endl;
 																nowLabelIndex += 2;
 															}
 			|	expression '<' expression					{
@@ -1194,11 +1207,38 @@ block:			'{' 						{
 											}
 			;
 
-conditional:	KW_IF '(' boolExpr ')' block				{ Trace("Reducing to conditional Form KW_IF '(' boolExpr ')' block\n"); }
-			|	KW_IF '(' boolExpr ')' block KW_ELSE block 	{ Trace("Reducing to conditional Form KW_IF '(' boolExpr ')' block KW_ELSE block\n"); }
+ifStament:		KW_IF '(' boolExpr ')' 				{
+														printTabs();
+														fp << "ifeq " << "L" << nowLabelIndex << endl;
+														topElseLabel.push_back(nowLabelIndex);
+
+														nowLabelIndex++;
+													}
+				block elseStament					{
+														Trace("Reducing to ifStament Form KW_IF '(' boolExpr ')' block\n");
+														fp << "L" << topElseLabel.back() << ":" << endl;
+
+														topElseLabel.pop_back();
+													}
 			;
 
-loop:			KW_WHILE '(' boolExpr ')' block				{ Trace("Reducing to loop Form KW_WHILE '(' boolExpr ')' block\n"); }
+elseStament:	KW_ELSE 							{
+														printTabs();
+														fp << "goto " << "L" << nowLabelIndex << endl;
+														fp << "L" << topElseLabel.back() << ":" << endl;
+														topElseLabel.pop_back();
+														topElseLabel.push_back(nowLabelIndex);
+
+														nowLabelIndex++;
+													}
+				block 								{
+
+													}
+			|	%empty								{
+													}
+			;
+
+loop:			KW_WHILE '(' boolExpr ')' block		{ Trace("Reducing to loop Form KW_WHILE '(' boolExpr ')' block\n"); }
 			;
 
 %%
