@@ -27,7 +27,7 @@ lex.yy.cpp: $(LEX_FILENAME)
 clean:
 	rm -f lex.yy.cpp y.tab.cpp y.tab.h  *.o *.exe *.class *.jasm
 
-fixedRun: $(OUTPUT_FILENAME) getJasm getClass excuteJava
+fixedRun: getJasm getClass excuteJava
 
 getJasm: $(TEST_FILENAME)
 	./$(OUTPUT_FILENAME) $(TEST_FILENAME)
@@ -38,7 +38,7 @@ getClass: proj3.jasm
 excuteJava: proj3.class
 	java proj3
 
-run: $(OUTPUT_FILENAME)
+run:
 ifdef f
 ifdef o
 	./$(OUTPUT_FILENAME) $(f) $(o)
