@@ -66,7 +66,6 @@ typedef struct {
 class symbolTables
 {
 private:
-	int nowFunctions = 0;
 	std::vector<symbolTable> tables;					// stack of symbolTable
 public:
 	symbolTables();

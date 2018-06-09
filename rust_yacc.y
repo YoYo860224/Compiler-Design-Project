@@ -1410,7 +1410,7 @@ int main(int argc, char *argv[])
 		outputfileName = argv[2];
 
 	// Write jasm.
-	fp.open(outputfileName + ".jasm", ios::out);
+	fp.open((outputfileName + ".jasm").c_str(), std::ios::out);
     if (!fp) {
 		fprintf(stderr, "ERROR: Fail to open %s\n", outputfileName.c_str());
 		exit(-1);
