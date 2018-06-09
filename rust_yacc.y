@@ -1406,6 +1406,11 @@ int main(int argc, char *argv[])
 
 	yyin = fopen(argv[1], "r");
 
+	if (!yyin) {
+		fprintf(stderr, "ERROR: Fail to open %s\n", argv[1]);
+		exit(-1);
+	}
+
 	if (argc == 3)
 		outputfileName = argv[2];
 
