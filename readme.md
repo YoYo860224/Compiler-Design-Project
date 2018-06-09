@@ -50,12 +50,14 @@ $ make
 
 ## Excute
 ``` bash
-$ _rust.exe <filename>                      # Compiler yourfile to proj3.jasm.
-$ _rust.exe <filename> <outputfileName>     # Compiler yourfile to <outputfileName>.jasm.
+$ _rust.exe <filename>                      # Compiler <filename> to proj3.jasm.
+$ _rust.exe <filename> <outputfileName>     # Compiler <filename> to <outputfileName>.jasm.
 $ javaa/javaa <outputfileName>.jasm         # Compiler jasm to class.
 $ java <outputfileName>                     # Run by java, should install java.
 
-$ make allRun                               # Do all to proj3.jasm.
+$ make allRun                               # Do all for test/_proj3.rust to proj3.class.
+$ make run f=<filename>                     # Do all for <filename> to proj3.class.
+$ make run f=<filename> o=<outputfileName>  # Do all for <filename> to <outputfileName>.class.
 ```
 
 ## Clean excess file

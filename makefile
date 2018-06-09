@@ -25,16 +25,28 @@ lex.yy.cpp: $(LEX_FILENAME)
 	$(LEX) -o lex.yy.cpp $(LEX_FILENAME)
 
 clean:
-	rm -f lex.yy.cpp y.tab.cpp y.tab.h  *.o *.exe
+	rm -f lex.yy.cpp y.tab.cpp y.tab.h  *.o *.exe *.class *.jasm
 
-allRun: doCompiler javaa java
+fixedRun: $(OUTPUT_FILENAME) getJasm getClass excuteJava
 
-doCompiler: $(TEST_FILENAME)
+getJasm: $(TEST_FILENAME)
 	./$(OUTPUT_FILENAME) $(TEST_FILENAME)
 
-javaa: proj3.jasm
+getClass: proj3.jasm
 	javaa/javaa proj3.jasm
 
-java: proj3.class
+excuteJava: proj3.class
 	java proj3
 
+run: $(OUTPUT_FILENAME)
+ifdef f
+ifdef o
+	./$(OUTPUT_FILENAME) $(f) $(o)
+	javaa/javaa $(o).jasm
+	java $(o)
+else
+	./$(OUTPUT_FILENAME) $(f)
+	javaa/javaa proj3.jasm
+	java proj3
+endif
+endif
