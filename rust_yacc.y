@@ -34,8 +34,8 @@ void printTabs();
 symbolTables symTabs = symbolTables();
 
 // Some global for check.
-bool hasReturned = false;
-bool nowIsConstant = false;
+bool hasReturned = false;		// if no input return, fp << "return"; 
+bool nowIsConstant = false;		// if constant use symtabs.
 int nowStackIndex = 0;
 int nowLabelIndex = 0;
 
@@ -411,6 +411,8 @@ functionDec:	KW_FN ID '('				{
 														fp << "int ";
 													else if (ve.type == T_BOOL)
 														fp << "bool ";
+													else
+														fp << "void ";
 
 													fp << ve.name;
 													fp << "(";
@@ -442,7 +444,8 @@ functionDec:	KW_FN ID '('				{
 
 												symTabs.pop_table();
 
-												if (!hasReturned) {
+												if (!hasReturned) 
+												{
 													printTabs();
 													fp << "return" << endl;
 												}
@@ -628,7 +631,7 @@ statement:		ID '=' expression ';'						{
 			|	block										{ Trace("Reducing to statement Form block\n"); }
 			|	ifStament									{ Trace("Reducing to statement Form ifStament\n"); }
 			|	loop										{ Trace("Reducing to statement Form loop\n"); }
-			|	functionInvoc								{ Trace("Reducing to statement Form functionInvoc\n"); }
+			|	functionInvoc ';'							{ Trace("Reducing to statement Form functionInvoc\n"); }
 			;
 
 expression:		'-' expression %prec UMINUS					{
@@ -1244,6 +1247,8 @@ functionInvoc:	ID '(' parameters ')'		{
 													fp << "int ";
 												else if (ve.type == T_BOOL)
 													fp << "bool ";
+												else
+													fp << "void ";
 
 												fp << outputfileName << "." << ve.name << "(";
 
@@ -1406,7 +1411,8 @@ int main(int argc, char *argv[])
 
 	yyin = fopen(argv[1], "r");
 
-	if (!yyin) {
+	if (!yyin) 
+	{
 		fprintf(stderr, "ERROR: Fail to open %s\n", argv[1]);
 		exit(-1);
 	}
@@ -1416,7 +1422,8 @@ int main(int argc, char *argv[])
 
 	// Write jasm.
 	fp.open((outputfileName + ".jasm").c_str(), std::ios::out);
-    if (!fp) {
+    if (!fp) 
+	{
 		fprintf(stderr, "ERROR: Fail to open %s\n", outputfileName.c_str());
 		exit(-1);
 	}
