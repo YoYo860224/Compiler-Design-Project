@@ -1,11 +1,11 @@
 CC = g++
 LEX = flex
 YACC = bison
-LEX_FILENAME = rust_lex.l
-YACC_FILENAME = rust_yacc.y
-OUTPUT_FILENAME = _rust.exe
+LEX_FILENAME = finalExam_lex.l
+YACC_FILENAME = finalExam_yacc.y
+OUTPUT_FILENAME = finalExam.exe
 TEST_FILENAME = ./test/_proj3.rust
-OTHER_SOURCE = symbol.cpp
+OTHER_SOURCE = 
 
 $(OUTPUT_FILENAME): clean lex.yy.o y.tab.o
 	$(CC) lex.yy.o y.tab.o $(OTHER_SOURCE) -o $(OUTPUT_FILENAME)
@@ -32,11 +32,11 @@ fixedRun: getJasm getClass excuteJava
 getJasm: $(TEST_FILENAME)
 	./$(OUTPUT_FILENAME) $(TEST_FILENAME)
 
-getClass: proj3.jasm
+getClass: finalExam.jasm
 	javaa/javaa proj3.jasm
 
-excuteJava: proj3.class
-	java proj3
+excuteJava: finalExam.class
+	java final
 
 run:
 ifdef f
@@ -46,7 +46,7 @@ ifdef o
 	java $(o)
 else
 	./$(OUTPUT_FILENAME) $(f)
-	javaa/javaa proj3.jasm
-	java proj3
+	javaa/javaa finalExam.jasm
+	java finalExam
 endif
 endif
